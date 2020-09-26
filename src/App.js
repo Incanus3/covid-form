@@ -1,6 +1,8 @@
 import React from 'react';
 import { Container, Row, Col  } from 'react-bootstrap';
-import { CovidCard, CovidForm } from './CovidForm'
+
+import CovidCard from './CovidCard'
+import CovidForm from './CovidForm'
 
 function App() {
   return (

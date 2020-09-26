@@ -1,157 +1,199 @@
-import React, { useState } from 'react';
-import { Alert, Card, Form, Button } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
+import React, { useState }   from 'react';
+import { Form, Button, Col } from 'react-bootstrap';
+import DatePicker            from 'react-datepicker';
+import { RadioGroup }        from './utils'
 
-export function CovidCard() {
+const EXAM_TYPE_PCR   = 'pcr'
+const EXAM_TYPE_RAPID = 'rapid'
+
+const REQUESTOR_TYPE_PL     = 'pl'
+const REQUESTOR_TYPE_KHS    = 'khs'
+const REQUESTOR_TYPE_SAMOPL = 'samopl'
+
+const INSURANCE_COMPANY_VZP    = 111
+const INSURANCE_COMPANY_VOZP   = 201
+const INSURANCE_COMPANY_CPZP   = 205
+const INSURANCE_COMPANY_OZP    = 207
+const INSURANCE_COMPANY_ZPS    = 209
+const INSURANCE_COMPANY_ZPMV   = 211
+const INSURANCE_COMPANY_RBP    = 213
+const INSURANCE_COMPANY_SAMOPL = 300
+const INSURANCE_COMPANY_KHS    = 999
+
+export default function CovidForm() {
+  const [examType,         setExamType]         = useState(EXAM_TYPE_PCR);
+  const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
+  const [haveRequestForm,  setHaveRequestForm]  = useState(false);
+  const [examDate,         setExamDate]         = useState(new Date());
+  const [firstName,        setFirstName]        = useState('');
+  const [lastName,         setLastName]         = useState('');
+  const [municipality,     setMunicipality]     = useState('');
+  const [zipCode,          setZipCode]          = useState('');
+  const [email,            setEmail]            = useState('');
+  const [phoneNumber,      setPhoneNumber]      = useState('');
+  const [insuranceNumber,  setInsuranceNumber]  = useState('');
+  const [insuranceCompany, setInsuranceCompany] = useState(111);
+
+  const submit = () => {
+    const data = {
+      requestorType, examType, examDate,
+      firstName, lastName,
+      municipality, zipCode,
+      email, phoneNumber,
+      insuranceNumber, insuranceCompany
+    }
+
+    console.log('submitting', data);
+  }
+
   return (
-    <Card>
-      <Card.Header>Objednání k vyšetření na COVID 19</Card.Header>
-      <Card.Body>
-        <Card.Title>Prosíme, před vyplněním si přečtěte následující informace:</Card.Title>
-        <Alert variant='danger'>Od 27.8.2020 až do odvolání je pozastaveno testování samoplátců!</Alert>
-        <Card.Text>
-          Provoz odběrového místa je zajištěn <strong>v pracovní dny v době od 8.00 do 12.00
-          hod.</strong> a od 12.30 do 16.00 (odpolední termín pouze pro potvrzené registrace).
-        </Card.Text>
-        <Card.Text>
-          E-maily s potvrzením termínu pro registraci nejsou rozesílány! Pacienti jsou k odběrům
-          přijímáni pouze do naplnění kapacity odběrového místa. V případě naplněné kapacity můžete
-          být, i přes registraci, předem kontaktován/a a může Vám být navržen jiný termín, nebo Vám
-          nemusí být služba poskytnuta vůbec.
-        </Card.Text>
-        <Card.Text>
-          Vyplněním a odesláním formuláře souhlasíte se zpracováním Vašich osobních údajů
-          poskytovatelem zdravotní služby.
-        </Card.Text>
-      </Card.Body>
-    </Card>
-  )
-}
+    <Form noValidate id="covid-form">
+      <RadioGroup
+        id='examination-type'
+        label='Jaký druh vyšetření požadujete?'
+        value={examType}
+        setter={setExamType}
+        options={[
+          { id: EXAM_TYPE_PCR,
+            label: 'PCR vyšetření (výtěr z nosu a následné laboratorní zpracování)' },
+          { id: EXAM_TYPE_RAPID,
+            label: 'RAPID test (orientační test z kapky krve)' },
+        ]}
+      />
 
-export function CovidForm() {
-  const [startDate, setStartDate] = useState(new Date());
+      <RadioGroup
+        id='requestor-type'
+        label='Kdo vyšetření požaduje?'
+        value={requestorType}
+        setter={setRequestorType}
+        options={[
+          { id: REQUESTOR_TYPE_PL,
+            label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
+          { id: REQUESTOR_TYPE_KHS,
+            label: 'KHS (k vyšetření jsem indikován hygienikem)' },
+          { id: REQUESTOR_TYPE_SAMOPL,
+            label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+        ]}
+      />
 
-  return (
-    <Form id="covid-form">
-      <Form.Group controlId="examination-type">
-        <Form.Label>Jaký druh vyšetření požadujete?</Form.Label>
-        <Form.Check
-          type="radio"
-          id="pcr"
-          label="PCR vyšetření (výtěr z nosu a následné laboratorní zpracování)" />
-        <Form.Check
-          type="radio"
-          id="rapid"
-          label="RAPID test (orientační test z kapky krve)" />
-      </Form.Group>
-
-      <Form.Group controlId="requestor-type">
-        <Form.Label>Kdo vyšetření požaduje?</Form.Label>
-        <Form.Check
-          type="radio"
-          id="pl"
-          label="PL / PLDD (odeslal mne můj ošetřující lékař)" />
-        <Form.Check
-          type="radio"
-          id="khs"
-          label="KHS (k vyšetření jsem indikován hygienikem)" />
-        <Form.Check
-          type="radio"
-          id="samoplatce"
-          label="SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)" />
-      </Form.Group>
-
-      <Form.Group id="have-request-form">
-        <Form.Check
-          type="checkbox"
-          label="Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS" />
-        <Form.Text className="text-muted">
-          Bez této žádanky NENÍ další registrace možná, vyšetření nebude provedeno.
-        </Form.Text>
-      </Form.Group>
+      {requestorType === REQUESTOR_TYPE_SAMOPL ||
+        <Form.Group id="have-request-form">
+          <Form.Check
+            required
+            type="checkbox"
+            label="Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS"
+            checked={haveRequestForm}
+            onChange={() => setHaveRequestForm(!haveRequestForm)}
+            isInvalid={!haveRequestForm}
+            feedback='Bez této žádanky NENÍ další registrace možná, vyšetření nebude provedeno.'
+          />
+        </Form.Group>}
 
       <Form.Group controlId="examination-date">
         <Form.Label>Datum vyšetření</Form.Label>
-        {/* <Form.Control type="text" placeholder="Vaše křestní jméno" /> */}
-        <DatePicker inline selected={startDate} onChange={date => setStartDate(date)} monthsShown={2} />
+        <DatePicker inline selected={examDate} onChange={date => setExamDate(date)} monthsShown={2} />
       </Form.Group>
 
-      <Form.Group controlId="first-name">
-        <Form.Label>Jméno</Form.Label>
-        <Form.Control type="text" placeholder="Vaše křestní jméno" />
-      </Form.Group>
+      <Form.Row>
+        <Form.Group as={Col} controlId="first-name">
+          <Form.Label>Jméno</Form.Label>
+          <Form.Control required
+            type="text"
+            placeholder="Vaše křestní jméno"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </Form.Group>
 
-      <Form.Group controlId="last-name">
-        <Form.Label>Příjmení</Form.Label>
-        <Form.Control type="text" placeholder="Vaše příjmení" />
-      </Form.Group>
+        <Form.Group as={Col} controlId="last-name">
+          <Form.Label>Příjmení</Form.Label>
+          <Form.Control required
+            type="text"
+            placeholder="Vaše příjmení"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </Form.Group>
+      </Form.Row>
 
-      <Form.Group controlId="email">
-        <Form.Label>E-mailová adresa</Form.Label>
-        <Form.Control type="email" placeholder="Vaše e-mailová adresa" />
-      </Form.Group>
+      <Form.Row>
+        <Form.Group as={Col} controlId="municipality">
+          <Form.Label>Bydliště (město/obec)</Form.Label>
+          <Form.Control required
+            type="text"
+            placeholder="Vaše bydliště"
+            value={municipality}
+            onChange={(e) => setMunicipality(e.target.value)}
+          />
+        </Form.Group>
 
-      <Form.Group controlId="address">
-        <Form.Label>Adresa bydliště (město, ulice, č.p.)</Form.Label>
-        <Form.Control type="text" placeholder="Vaše adresa" />
-      </Form.Group>
+        <Form.Group as={Col} controlId="zip-code">
+          <Form.Label>PSČ</Form.Label>
+          <Form.Control required
+            type="text"
+            placeholder="Vaše poštovní směrovací číslo"
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value)}
+          />
+        </Form.Group>
+      </Form.Row>
 
-      <Form.Group controlId="zip">
-        <Form.Label>PSČ</Form.Label>
-        <Form.Control type="number" placeholder="Vaše poštovní směrovací číslo" />
-      </Form.Group>
+      <Form.Row>
+        <Form.Group as={Col} controlId="email">
+          <Form.Label>E-mailová adresa</Form.Label>
+          <Form.Control required
+            type="email"
+            placeholder="Vaše e-mailová adresa"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Form.Group>
 
-      <Form.Group controlId="phone">
-        <Form.Label>Telefonní číslo</Form.Label>
-        <Form.Control type="phone" placeholder="Vaše telefonní číslo" />
-      </Form.Group>
+        <Form.Group as={Col} controlId="phone">
+          <Form.Label>Telefonní číslo</Form.Label>
+          <Form.Control required
+            type="phone"
+            placeholder="Vaše telefonní číslo"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+        </Form.Group>
+      </Form.Row>
 
       <Form.Group controlId="insurance-number">
         <Form.Label>Číslo pojištěnce (bez lomítka)</Form.Label>
-        <Form.Control type="number" placeholder="Vaše číslo pojištěnce" />
+        <Form.Control required
+          type="text"
+          placeholder="Vaše číslo pojištěnce"
+          value={insuranceNumber}
+          onChange={(e) => setInsuranceNumber(e.target.value)}
+        />
       </Form.Group>
 
-      <Form.Group controlId="insurance-company">
-        <Form.Label>Zdravotní pojišťovna</Form.Label>
-        <Form.Check
-          type="radio"
-          id="300"
-          label="SAMOPLÁTCE" />
-        <Form.Check
-          type="radio"
-          id="111"
-          label="VZP" />
-        <Form.Check
-          type="radio"
-          id="201"
-          label="VOZP" />
-        <Form.Check
-          type="radio"
-          id="205"
-          label="ČPZP" />
-        <Form.Check
-          type="radio"
-          id="207"
-          label="OZP" />
-        <Form.Check
-          type="radio"
-          id="209"
-          label="ZPŠ" />
-        <Form.Check
-          type="radio"
-          id="211"
-          label="ZPMV" />
-        <Form.Check
-          type="radio"
-          id="213"
-          label="RBP" />
-        <Form.Check
-          type="radio"
-          id="999"
-          label="Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS" />
-      </Form.Group>
+      <RadioGroup
+        id='insurance-company'
+        label='Zdravotní pojišťovna'
+        value={insuranceCompany}
+        setter={setInsuranceCompany}
+        options={[
+          { id: INSURANCE_COMPANY_VZP,    label: 'VZP' },
+          { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP' },
+          { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP' },
+          { id: INSURANCE_COMPANY_OZP,    label: 'OZP' },
+          { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ' },
+          { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV' },
+          { id: INSURANCE_COMPANY_RBP,    label: 'RBP' },
+          { id: INSURANCE_COMPANY_SAMOPL, label: 'Samoplátce' },
+          { id: INSURANCE_COMPANY_KHS,
+            label: 'Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS' },
+        ]}
+      />
 
-      <Button variant="primary" type="submit">
+      <Button
+        variant="primary"
+        onClick={submit}
+        disabled={!(requestorType === REQUESTOR_TYPE_SAMOPL || haveRequestForm)}
+      >
         Submit
       </Button>
     </Form>
