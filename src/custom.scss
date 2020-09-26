@@ -1,0 +1,40 @@
+body {
+  margin-top:    46px; // TODO: use bootstrap container margin variable here
+  margin-bottom: 46px; // TODO: use bootstrap container margin variable here
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.row {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.card-header {
+  font-size: 150%;
+  font-weight: bold;
+}
+
+.card-title {
+  font-weight: bold;
+}
+
+#covid-form {
+  margin-left: 24px;
+}
+
+.form-group#have-request-form .form-check-label {
+  font-weight: bold;
+}
