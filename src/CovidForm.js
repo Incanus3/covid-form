@@ -3,6 +3,11 @@ import { Form, Button, Col } from 'react-bootstrap';
 import DatePicker            from 'react-datepicker';
 import { RadioGroup }        from './utils'
 
+const ZIP_REGEX    = /^\d{3} ?\d{2}$/;
+const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
+const PHONE_PREFIX = '(\\+|00)\\d{2,3}'
+const PHONE_REGEX  = RegExp(`^(${PHONE_PREFIX}|\\(${PHONE_PREFIX}\\))? ?[1-9]\\d{2} ?\\d{3} ?\\d{3}$`);
+
 const EXAM_TYPE_PCR   = 'pcr'
 const EXAM_TYPE_RAPID = 'rapid'
 
@@ -19,6 +24,12 @@ const INSURANCE_COMPANY_ZPMV   = 211
 const INSURANCE_COMPANY_RBP    = 213
 const INSURANCE_COMPANY_SAMOPL = 300
 const INSURANCE_COMPANY_KHS    = 999
+
+function isValidInsuranceNumber(input) {
+  const length = input.length;
+
+  return input.match(/^\d{9,10}$/) && (length === 9 || input % 11 === 0);
+}
 
 export default function CovidForm() {
   const [examType,         setExamType]         = useState(EXAM_TYPE_PCR);
@@ -45,6 +56,15 @@ export default function CovidForm() {
 
     console.log('submitting', data);
   }
+
+  const zipIsValid = zipCode.match(ZIP_REGEX);
+  const emailIsValid = email.match(EMAIL_REGEX);
+  const phoneIsValid = phoneNumber.match(PHONE_REGEX);
+  const insNumIsValid = requestorType === REQUESTOR_TYPE_SAMOPL
+    || isValidInsuranceNumber(insuranceNumber);
+  const canSubmit = firstName && lastName && municipality
+    && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
+    && (requestorType === REQUESTOR_TYPE_SAMOPL || haveRequestForm);
 
   return (
     <Form noValidate id="covid-form">
@@ -91,7 +111,11 @@ export default function CovidForm() {
 
       <Form.Group controlId="examination-date">
         <Form.Label>Datum vyšetření</Form.Label>
-        <DatePicker inline selected={examDate} onChange={date => setExamDate(date)} monthsShown={2} />
+        <DatePicker inline
+          selected={examDate}
+          onChange={date => setExamDate(date)}
+          monthsShown={2}
+        />
       </Form.Group>
 
       <Form.Row>
@@ -102,7 +126,11 @@ export default function CovidForm() {
             placeholder="Vaše křestní jméno"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
+            isInvalid={!firstName}
           />
+          <Form.Control.Feedback type="invalid">
+            Tato položka je povinná
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group as={Col} controlId="last-name">
@@ -112,7 +140,11 @@ export default function CovidForm() {
             placeholder="Vaše příjmení"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            isInvalid={!lastName}
           />
+          <Form.Control.Feedback type="invalid">
+            Tato položka je povinná
+          </Form.Control.Feedback>
         </Form.Group>
       </Form.Row>
 
@@ -124,7 +156,11 @@ export default function CovidForm() {
             placeholder="Vaše bydliště"
             value={municipality}
             onChange={(e) => setMunicipality(e.target.value)}
+            isInvalid={!municipality}
           />
+          <Form.Control.Feedback type="invalid">
+            Tato položka je povinná
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group as={Col} controlId="zip-code">
@@ -134,7 +170,11 @@ export default function CovidForm() {
             placeholder="Vaše poštovní směrovací číslo"
             value={zipCode}
             onChange={(e) => setZipCode(e.target.value)}
+            isInvalid={!zipIsValid}
           />
+          <Form.Control.Feedback type="invalid">
+            {zipCode ? 'Není validní PSČ' : 'Tato položka je povinná'}
+          </Form.Control.Feedback>
         </Form.Group>
       </Form.Row>
 
@@ -146,7 +186,11 @@ export default function CovidForm() {
             placeholder="Vaše e-mailová adresa"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            isInvalid={!emailIsValid}
           />
+          <Form.Control.Feedback type="invalid">
+            {email ? 'Není validní emailová adresa' : 'Tato položka je povinná'}
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group as={Col} controlId="phone">
@@ -156,7 +200,11 @@ export default function CovidForm() {
             placeholder="Vaše telefonní číslo"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
+            isInvalid={!phoneIsValid}
           />
+          <Form.Control.Feedback type="invalid">
+            {phoneNumber ? 'Není validní telefonní číslo' : 'Tato položka je povinná'}
+          </Form.Control.Feedback>
         </Form.Group>
       </Form.Row>
 
@@ -167,7 +215,11 @@ export default function CovidForm() {
           placeholder="Vaše číslo pojištěnce"
           value={insuranceNumber}
           onChange={(e) => setInsuranceNumber(e.target.value)}
+          isInvalid={!insNumIsValid}
         />
+          <Form.Control.Feedback type="invalid">
+            {insuranceNumber ? 'Není validní číslo pojištěnce' : 'Tato položka je povinná'}
+          </Form.Control.Feedback>
       </Form.Group>
 
       <RadioGroup
@@ -192,7 +244,7 @@ export default function CovidForm() {
       <Button
         variant="primary"
         onClick={submit}
-        disabled={!(requestorType === REQUESTOR_TYPE_SAMOPL || haveRequestForm)}
+        disabled={!canSubmit}
       >
         Submit
       </Button>
