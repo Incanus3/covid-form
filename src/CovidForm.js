@@ -1,6 +1,7 @@
 import React, { useState }   from 'react';
 import { Form, Button, Col } from 'react-bootstrap';
 import DatePicker            from 'react-datepicker';
+import add                   from 'date-fns/add';
 import { RadioGroup }        from './utils'
 
 const ZIP_REGEX    = /^\d{3} ?\d{2}$/;
@@ -35,7 +36,7 @@ export default function CovidForm() {
   const [examType,         setExamType]         = useState(EXAM_TYPE_PCR);
   const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
   const [haveRequestForm,  setHaveRequestForm]  = useState(false);
-  const [examDate,         setExamDate]         = useState(new Date());
+  const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
   const [firstName,        setFirstName]        = useState('');
   const [lastName,         setLastName]         = useState('');
   const [municipality,     setMunicipality]     = useState('');
@@ -55,6 +56,12 @@ export default function CovidForm() {
     }
 
     console.log('submitting', data);
+
+    fetch('http://localhost:8000/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
   }
 
   const zipIsValid = zipCode.match(ZIP_REGEX);
@@ -111,9 +118,11 @@ export default function CovidForm() {
 
       <Form.Group controlId="examination-date">
         <Form.Label>Datum vyšetření</Form.Label>
-        <DatePicker inline
+        <DatePicker inline disabledKeyboardNavigation
           selected={examDate}
           onChange={date => setExamDate(date)}
+          minDate={new Date()}
+          maxDate={add(new Date(), { months: 2 })}
           monthsShown={2}
         />
       </Form.Group>
