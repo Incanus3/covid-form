@@ -35,16 +35,25 @@ function isValidInsuranceNumber(input) {
 export default function CovidForm() {
   const [examType,         setExamType]         = useState(EXAM_TYPE_PCR);
   const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
-  const [haveRequestForm,  setHaveRequestForm]  = useState(false);
+  // const [haveRequestForm,  setHaveRequestForm]  = useState(false);
   const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
-  const [firstName,        setFirstName]        = useState('');
-  const [lastName,         setLastName]         = useState('');
-  const [municipality,     setMunicipality]     = useState('');
-  const [zipCode,          setZipCode]          = useState('');
-  const [email,            setEmail]            = useState('');
-  const [phoneNumber,      setPhoneNumber]      = useState('');
-  const [insuranceNumber,  setInsuranceNumber]  = useState('');
+  // const [firstName,        setFirstName]        = useState('');
+  // const [lastName,         setLastName]         = useState('');
+  // const [municipality,     setMunicipality]     = useState('');
+  // const [zipCode,          setZipCode]          = useState('');
+  // const [email,            setEmail]            = useState('');
+  // const [phoneNumber,      setPhoneNumber]      = useState('');
+  // const [insuranceNumber,  setInsuranceNumber]  = useState('');
   const [insuranceCompany, setInsuranceCompany] = useState(111);
+
+  const [haveRequestForm,  setHaveRequestForm]  = useState(true);
+  const [firstName,        setFirstName]        = useState('jakub');
+  const [lastName,         setLastName]         = useState('kalab');
+  const [municipality,     setMunicipality]     = useState('mnicho');
+  const [zipCode,          setZipCode]          = useState('25164');
+  const [email,            setEmail]            = useState('j@k.cz');
+  const [phoneNumber,      setPhoneNumber]      = useState('602222222');
+  const [insuranceNumber,  setInsuranceNumber]  = useState('8801019997');
 
   const submit = () => {
     const data = {
@@ -55,13 +64,15 @@ export default function CovidForm() {
       insuranceNumber, insuranceCompany
     }
 
-    console.log('submitting', data);
+    console.log('submitting', JSON.stringify(data));
 
-    fetch('http://localhost:8000/register', {
+    fetch('http://localhost:9292/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+      body: JSON.stringify(data),
+    })
+      .then(response => { console.log('received', response); return response.json() })
+      .then(body => console.log(body));
   }
 
   const zipIsValid = zipCode.match(ZIP_REGEX);

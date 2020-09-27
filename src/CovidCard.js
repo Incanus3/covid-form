@@ -5,6 +5,7 @@ export default function CovidCard() {
   return (
     <Card>
       <Card.Header>Objednání k vyšetření na COVID 19</Card.Header>
+
       <Card.Body>
         <Card.Title>Prosíme, před vyplněním si přečtěte následující informace:</Card.Title>
         <Alert variant='danger'>Od 27.8.2020 až do odvolání je pozastaveno testování samoplátců!</Alert>
