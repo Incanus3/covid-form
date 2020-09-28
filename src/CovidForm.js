@@ -2,7 +2,9 @@ import React, { useState }   from 'react';
 import { Form, Button, Col } from 'react-bootstrap';
 import DatePicker            from 'react-datepicker';
 import add                   from 'date-fns/add';
-import { RadioGroup }        from './utils'
+
+import { RadioGroup }        from './utils/components'
+import { keysToSnakeCase }   from './utils/generic'
 
 const ZIP_REGEX    = /^\d{3} ?\d{2}$/;
 const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
@@ -56,15 +58,15 @@ export default function CovidForm() {
   const [insuranceNumber,  setInsuranceNumber]  = useState('8801019997');
 
   const submit = () => {
-    const data = {
+    const data = keysToSnakeCase({
       requestorType, examType, examDate,
       firstName, lastName,
       municipality, zipCode,
       email, phoneNumber,
       insuranceNumber, insuranceCompany
-    }
+    });
 
-    console.log('submitting', JSON.stringify(data));
+    console.log('submitting', data);
 
     fetch('http://localhost:9292/register', {
       method: 'POST',
@@ -75,9 +77,9 @@ export default function CovidForm() {
       .then(body => console.log(body));
   }
 
-  const zipIsValid = zipCode.match(ZIP_REGEX);
-  const emailIsValid = email.match(EMAIL_REGEX);
-  const phoneIsValid = phoneNumber.match(PHONE_REGEX);
+  const zipIsValid    = zipCode.match(ZIP_REGEX);
+  const emailIsValid  = email.match(EMAIL_REGEX);
+  const phoneIsValid  = phoneNumber.match(PHONE_REGEX);
   const insNumIsValid = requestorType === REQUESTOR_TYPE_SAMOPL
     || isValidInsuranceNumber(insuranceNumber);
   const canSubmit = firstName && lastName && municipality
