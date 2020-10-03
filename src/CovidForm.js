@@ -1,10 +1,10 @@
-import React, { useState }   from 'react';
-import { Form, Button, Col } from 'react-bootstrap';
-import DatePicker            from 'react-datepicker';
-import add                   from 'date-fns/add';
+import React, { useState               } from 'react';
+import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
+import { capitalize, join              } from 'lodash';
+import add                               from 'date-fns/add';
 
-import { RadioGroup }        from './utils/components'
-import { keysToSnakeCase }   from './utils/generic'
+import { RadioGroup, ResponsiveDatePicker } from './utils/components'
+import { keysToSnakeCase }                  from './utils/generic'
 
 const ZIP_REGEX    = /^\d{3} ?\d{2}$/;
 const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
@@ -56,6 +56,7 @@ export default function CovidForm() {
   const [email,            setEmail]            = useState('j@k.cz');
   const [phoneNumber,      setPhoneNumber]      = useState('602222222');
   const [insuranceNumber,  setInsuranceNumber]  = useState('8801019997');
+  const [responseData,     setResponseData]     = useState(null);
 
   const submit = () => {
     const data = keysToSnakeCase({
@@ -74,7 +75,10 @@ export default function CovidForm() {
       body: JSON.stringify(data),
     })
       .then(response => { console.log('received', response); return response.json() })
-      .then(body => console.log(body));
+      .then(body => {
+        console.log(body);
+        setResponseData(body);
+      });
   }
 
   const zipIsValid    = zipCode.match(ZIP_REGEX);
@@ -85,6 +89,20 @@ export default function CovidForm() {
   const canSubmit = firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
     && (requestorType === REQUESTOR_TYPE_SAMOPL || haveRequestForm);
+
+  var responseAlert;
+
+  switch(responseData?.status) {
+    case 'OK':
+      responseAlert = <Alert variant='success'>Vaše registrace byla úspěšná</Alert>;
+      break;
+    case 'ERROR':
+      const joinedErrors = join(responseData.error.map((error) => capitalize(error) + '.'), ' ');
+      responseAlert      = <Alert variant='danger'>{joinedErrors}</Alert>;
+      break;
+    default:
+      responseAlert = null;
+  }
 
   return (
     <Form noValidate id="covid-form">
@@ -131,12 +149,12 @@ export default function CovidForm() {
 
       <Form.Group controlId="examination-date">
         <Form.Label>Datum vyšetření</Form.Label>
-        <DatePicker inline disabledKeyboardNavigation
+        <ResponsiveDatePicker inline disabledKeyboardNavigation
+          id='examination-date'
           selected={examDate}
           onChange={date => setExamDate(date)}
           minDate={new Date()}
           maxDate={add(new Date(), { months: 2 })}
-          monthsShown={2}
         />
       </Form.Group>
 
@@ -239,9 +257,9 @@ export default function CovidForm() {
           onChange={(e) => setInsuranceNumber(e.target.value)}
           isInvalid={!insNumIsValid}
         />
-          <Form.Control.Feedback type="invalid">
-            {insuranceNumber ? 'Není validní číslo pojištěnce' : 'Tato položka je povinná'}
-          </Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid">
+          {insuranceNumber ? 'Není validní číslo pojištěnce' : 'Tato položka je povinná'}
+        </Form.Control.Feedback>
       </Form.Group>
 
       <RadioGroup
@@ -250,26 +268,35 @@ export default function CovidForm() {
         value={insuranceCompany}
         setter={setInsuranceCompany}
         options={[
-          { id: INSURANCE_COMPANY_VZP,    label: 'VZP' },
-          { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP' },
-          { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP' },
-          { id: INSURANCE_COMPANY_OZP,    label: 'OZP' },
-          { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ' },
-          { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV' },
-          { id: INSURANCE_COMPANY_RBP,    label: 'RBP' },
+          { id: INSURANCE_COMPANY_VZP,    label: 'VZP'        },
+          { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP'       },
+          { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP'       },
+          { id: INSURANCE_COMPANY_OZP,    label: 'OZP'        },
+          { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ'        },
+          { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV'       },
+          { id: INSURANCE_COMPANY_RBP,    label: 'RBP'        },
           { id: INSURANCE_COMPANY_SAMOPL, label: 'Samoplátce' },
           { id: INSURANCE_COMPANY_KHS,
             label: 'Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS' },
         ]}
       />
 
-      <Button
-        variant="primary"
-        onClick={submit}
-        disabled={!canSubmit}
-      >
-        Submit
-      </Button>
+      <Row>
+        <Col xs="auto">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={submit}
+            disabled={!canSubmit || responseData?.status === 'OK'}
+          >
+            Submit
+          </Button>
+        </Col>
+
+        <Col>
+          {responseAlert}
+        </Col>
+      </Row>
     </Form>
   )
 }
