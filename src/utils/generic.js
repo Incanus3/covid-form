@@ -7,3 +7,26 @@ export function camelToSnakeCase(string) {
 export function keysToSnakeCase(object) {
   return mapKeys(object, (_value, key) => camelToSnakeCase(key));
 }
+
+export class Result {
+}
+
+export class Success extends Result {
+  isSuccess = true;
+  isFailure = false;
+
+  constructor(data) {
+    super();
+    this.data = data;
+  }
+}
+
+export class Failure extends Result {
+  isSuccess = false;
+  isFailure = true;
+
+  constructor(error) {
+    super();
+    this.error = error;
+  }
+}

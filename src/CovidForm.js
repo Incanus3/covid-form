@@ -3,6 +3,7 @@ import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 import { capitalize, join              } from 'lodash';
 import add                               from 'date-fns/add';
 
+import config                               from './config'
 import { RadioGroup, ResponsiveDatePicker } from './utils/components'
 import { keysToSnakeCase }                  from './utils/generic'
 
@@ -37,25 +38,16 @@ function isValidInsuranceNumber(input) {
 export default function CovidForm() {
   const [examType,         setExamType]         = useState(EXAM_TYPE_PCR);
   const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
-  // const [haveRequestForm,  setHaveRequestForm]  = useState(false);
+  const [haveRequestForm,  setHaveRequestForm]  = useState(false);
   const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
-  // const [firstName,        setFirstName]        = useState('');
-  // const [lastName,         setLastName]         = useState('');
-  // const [municipality,     setMunicipality]     = useState('');
-  // const [zipCode,          setZipCode]          = useState('');
-  // const [email,            setEmail]            = useState('');
-  // const [phoneNumber,      setPhoneNumber]      = useState('');
-  // const [insuranceNumber,  setInsuranceNumber]  = useState('');
+  const [firstName,        setFirstName]        = useState('');
+  const [lastName,         setLastName]         = useState('');
+  const [municipality,     setMunicipality]     = useState('');
+  const [zipCode,          setZipCode]          = useState('');
+  const [email,            setEmail]            = useState('');
+  const [phoneNumber,      setPhoneNumber]      = useState('');
+  const [insuranceNumber,  setInsuranceNumber]  = useState('');
   const [insuranceCompany, setInsuranceCompany] = useState(111);
-
-  const [haveRequestForm,  setHaveRequestForm]  = useState(true);
-  const [firstName,        setFirstName]        = useState('jakub');
-  const [lastName,         setLastName]         = useState('kalab');
-  const [municipality,     setMunicipality]     = useState('mnicho');
-  const [zipCode,          setZipCode]          = useState('25164');
-  const [email,            setEmail]            = useState('j@k.cz');
-  const [phoneNumber,      setPhoneNumber]      = useState('602222222');
-  const [insuranceNumber,  setInsuranceNumber]  = useState('8801019997');
   const [responseData,     setResponseData]     = useState(null);
 
   const submit = () => {
@@ -69,7 +61,7 @@ export default function CovidForm() {
 
     console.log('submitting', data);
 
-    fetch('http://localhost:9292/register', {
+    fetch(`${config.base_url}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -159,7 +151,7 @@ export default function CovidForm() {
       </Form.Group>
 
       <Form.Row>
-        <Form.Group as={Col} controlId="first-name">
+        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="first-name">
           <Form.Label>Jméno</Form.Label>
           <Form.Control required
             type="text"
@@ -173,7 +165,7 @@ export default function CovidForm() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={Col} controlId="last-name">
+        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="last-name">
           <Form.Label>Příjmení</Form.Label>
           <Form.Control required
             type="text"
@@ -189,7 +181,7 @@ export default function CovidForm() {
       </Form.Row>
 
       <Form.Row>
-        <Form.Group as={Col} controlId="municipality">
+        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="municipality">
           <Form.Label>Bydliště (město/obec)</Form.Label>
           <Form.Control required
             type="text"
@@ -203,7 +195,7 @@ export default function CovidForm() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={Col} controlId="zip-code">
+        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="zip-code">
           <Form.Label>PSČ</Form.Label>
           <Form.Control required
             type="text"
@@ -219,7 +211,7 @@ export default function CovidForm() {
       </Form.Row>
 
       <Form.Row>
-        <Form.Group as={Col} controlId="email">
+        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="email">
           <Form.Label>E-mailová adresa</Form.Label>
           <Form.Control required
             type="email"
@@ -233,7 +225,7 @@ export default function CovidForm() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={Col} controlId="phone">
+        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="phone">
           <Form.Label>Telefonní číslo</Form.Label>
           <Form.Control required
             type="phone"
