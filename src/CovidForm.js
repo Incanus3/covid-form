@@ -151,7 +151,7 @@ export default function CovidForm() {
       </Form.Group>
 
       <Form.Row>
-        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="first-name">
+        <Form.Group as={Col} controlId="first-name">
           <Form.Label>Jméno</Form.Label>
           <Form.Control required
             type="text"
@@ -165,7 +165,7 @@ export default function CovidForm() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="last-name">
+        <Form.Group as={Col} controlId="last-name">
           <Form.Label>Příjmení</Form.Label>
           <Form.Control required
             type="text"
@@ -181,7 +181,7 @@ export default function CovidForm() {
       </Form.Row>
 
       <Form.Row>
-        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="municipality">
+        <Form.Group as={Col} controlId="municipality">
           <Form.Label>Bydliště (město/obec)</Form.Label>
           <Form.Control required
             type="text"
@@ -195,7 +195,7 @@ export default function CovidForm() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="zip-code">
+        <Form.Group as={Col} controlId="zip-code">
           <Form.Label>PSČ</Form.Label>
           <Form.Control required
             type="text"
@@ -211,7 +211,7 @@ export default function CovidForm() {
       </Form.Row>
 
       <Form.Row>
-        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="email">
+        <Form.Group as={Col} controlId="email">
           <Form.Label>E-mailová adresa</Form.Label>
           <Form.Control required
             type="email"
@@ -225,7 +225,7 @@ export default function CovidForm() {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={(props) => <Col md={6} {...props}/>} controlId="phone">
+        <Form.Group as={Col} controlId="phone">
           <Form.Label>Telefonní číslo</Form.Label>
           <Form.Control required
             type="phone"
@@ -281,7 +281,7 @@ export default function CovidForm() {
             onClick={submit}
             disabled={!canSubmit || responseData?.status === 'OK'}
           >
-            Submit
+            Registrovat se
           </Button>
         </Col>
 

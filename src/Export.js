@@ -1,14 +1,13 @@
 import React, { useState         } from 'react';
 import { Row, Col, Button, Alert } from 'react-bootstrap';
+import Dialog                      from 'react-bootstrap-dialog';
 import { capitalize              } from 'lodash';
 import { saveAs                  } from 'file-saver';
 
 import config               from './config'
 import { Success, Failure } from './utils/generic'
 
-async function saveExport() {
-  const password = prompt('Zadejte administrátorské heslo');
-
+async function saveExport(password) {
   if (typeof(password) === 'string') {
     const headers = {
       'Authorization': `Password ${password}`,
@@ -28,12 +27,22 @@ async function saveExport() {
 }
 
 export default function Export() {
+  const [dialog,       setDialog      ] = useState(null);
   const [exportStatus, setExportStatus] = useState(null);
 
   const exportClicked = async () => {
-    const result = await saveExport();
+    setExportStatus(null);
 
-    setExportStatus(result);
+    dialog.show({
+      title: 'Exportovat do CSV', body: 'Zadejte administrativní heslo:',
+      actions: [
+        Dialog.CancelAction(),
+        Dialog.OKAction(async (dialog) => {
+          const result = await saveExport(dialog.value);
+          setExportStatus(result);
+        })],
+      prompt: Dialog.PasswordPrompt()
+    });
   }
 
   return (
@@ -45,6 +54,8 @@ export default function Export() {
       {exportStatus && exportStatus.isFailure &&
         <Col><Alert variant='danger'>{capitalize(exportStatus.error)}</Alert></Col>
       }
+
+      <Dialog ref={(component) => setDialog(component)} />
     </Row>
   );
 }
