@@ -1,11 +1,14 @@
-import React, { useState                      }from 'react';
-import { Row, Col, Button, Alert, Form, Modal }from 'react-bootstrap';
-import { capitalize                           }from 'lodash';
-import { saveAs                               }from 'file-saver';
+import React, { useState                      } from 'react';
+import { Row, Col, Button, Alert, Form, Modal } from 'react-bootstrap';
+import { formatISO                            } from 'date-fns';
+import { capitalize                           } from 'lodash';
+import { saveAs                               } from 'file-saver';
 
 import { request          } from './backend';
 import { Success, Failure } from './utils/generic';
 import { DatePicker       } from './utils/components';
+
+const formatDate = (date) => formatISO(date, { representation: 'date' });
 
 async function saveExport(password, startDate, endDate) {
   if (typeof(password) === 'string') {
@@ -14,7 +17,7 @@ async function saveExport(password, startDate, endDate) {
     }
 
     const { status, body } = await request('GET', '/export', {
-      headers, body: { start_date: startDate, end_date: endDate }
+      headers, params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
     })
 
     if (status === 200) {
@@ -61,7 +64,7 @@ function ExportModal(props) {
       <Modal.Body>
         <Form noValidate id='export-csv-form'>
           <Form.Group id='export-from' as={Row}>
-            <Form.Label column sm={6}>Exportovat od data</Form.Label>
+            <Form.Label column sm={6}>Zahrnout od data (včetně)</Form.Label>
             <Col sm={6}>
               <DatePicker
                 selected={startDate}
@@ -74,7 +77,7 @@ function ExportModal(props) {
           </Form.Group>
 
           <Form.Group id='export-to' as={Row}>
-            <Form.Label column sm={6}>Exportovat do data</Form.Label>
+            <Form.Label column sm={6}>Zahrnout do data (včetně)</Form.Label>
             <Col sm={6}>
               <DatePicker
                 selected={endDate}
@@ -105,10 +108,10 @@ function ExportModal(props) {
 
       <Modal.Footer>
         <Button variant="secondary" onClick={() => { setPassword(''); hide() }}>
-          Close
+          Zrušit
         </Button>
         <Button variant="primary" onClick={() => { submit(password); setPassword(''); hide() }}>
-          Save Changes
+          Exportovat
         </Button>
       </Modal.Footer>
     </Modal>
