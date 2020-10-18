@@ -1,11 +1,11 @@
-import React, { useState               } from 'react';
+import React, { useState, useEffect    } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 import { capitalize, join              } from 'lodash';
 import add                               from 'date-fns/add';
 
-import config                               from './config'
-import { RadioGroup, ResponsiveDatePicker } from './utils/components'
-import { keysToSnakeCase }                  from './utils/generic'
+import { RadioGroup, ResponsiveDatePicker } from './utils/components';
+import { keysToSnakeCase }                  from './utils/generic';
+import { request }                          from './backend';
 
 const ZIP_REGEX    = /^\d{3} ?\d{2}$/;
 const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
@@ -40,6 +40,7 @@ export default function CovidForm() {
   const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
   const [haveRequestForm,  setHaveRequestForm]  = useState(false);
   const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
+  const [timeSlotId,       setTimeSlotId]       = useState(null);
   const [firstName,        setFirstName]        = useState('');
   const [lastName,         setLastName]         = useState('');
   const [municipality,     setMunicipality]     = useState('');
@@ -49,28 +50,45 @@ export default function CovidForm() {
   const [insuranceNumber,  setInsuranceNumber]  = useState('');
   const [insuranceCompany, setInsuranceCompany] = useState(111);
   const [responseData,     setResponseData]     = useState(null);
+  const [timeSlots,        setTimeSlots]        = useState(null);
+  const [isLoading,        setIsLoading]        = useState(true);
 
-  const submit = () => {
+  useEffect(() => {
+    async function loadTimeSlots() {
+      const { body: data } = await request('GET', '/crud/time_slots');
+      // TODO: handle failure
+      setTimeSlots(data.time_slots);
+      setTimeSlotId(data.time_slots[0].id);
+      setIsLoading(false);
+    }
+    loadTimeSlots();
+  }, [])
+
+  const submit = async () => {
     const data = keysToSnakeCase({
       requestorType, examType, examDate,
       firstName, lastName,
       municipality, zipCode,
       email, phoneNumber,
-      insuranceNumber, insuranceCompany
+      insuranceNumber, insuranceCompany,
+      timeSlotId
     });
 
     console.log('submitting', data);
 
-    fetch(`${config.base_url}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-      .then(response => { console.log('received', response); return response.json() })
-      .then(body => {
-        console.log(body);
-        setResponseData(body);
-      });
+    const { body } = await request('post', '/register', { data });
+    console.log(body);
+    setResponseData(body);
+  }
+
+  const reset = () => {
+    setHaveRequestForm(false);
+    setFirstName('');
+    setLastName('');
+    setPhoneNumber('');
+    setInsuranceNumber('');
+    setInsuranceCompany(111);
+    setResponseData(null);
   }
 
   const zipIsValid    = zipCode.match(ZIP_REGEX);
@@ -82,6 +100,8 @@ export default function CovidForm() {
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
     && (requestorType === REQUESTOR_TYPE_SAMOPL || haveRequestForm);
 
+  const hasRegistered = responseData?.status === 'OK';
+  const disableSubmit = !canSubmit || hasRegistered;
   var responseAlert;
 
   switch(responseData?.status) {
@@ -96,93 +116,104 @@ export default function CovidForm() {
       responseAlert = null;
   }
 
-  return (
-    <Form noValidate id="covid-form">
-      <RadioGroup
-        id='examination-type'
-        label='Jaký druh vyšetření požadujete?'
-        value={examType}
-        setter={setExamType}
-        options={[
-          { id: EXAM_TYPE_PCR,
-            label: 'PCR vyšetření (výtěr z nosu a následné laboratorní zpracování)' },
-          { id: EXAM_TYPE_RAPID,
-            label: 'RAPID test (orientační test z kapky krve)' },
-        ]}
-      />
-
-      <RadioGroup
-        id='requestor-type'
-        label='Kdo vyšetření požaduje?'
-        value={requestorType}
-        setter={setRequestorType}
-        options={[
-          { id: REQUESTOR_TYPE_PL,
-            label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
-          { id: REQUESTOR_TYPE_KHS,
-            label: 'KHS (k vyšetření jsem indikován hygienikem)' },
-          { id: REQUESTOR_TYPE_SAMOPL,
-            label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
-        ]}
-      />
-
-      {requestorType === REQUESTOR_TYPE_SAMOPL ||
-        <Form.Group id="have-request-form">
-          <Form.Check
-            required
-            type="checkbox"
-            label="Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS"
-            checked={haveRequestForm}
-            onChange={() => setHaveRequestForm(!haveRequestForm)}
-            isInvalid={!haveRequestForm}
-            feedback='Bez této žádanky NENÍ další registrace možná, vyšetření nebude provedeno.'
-          />
-        </Form.Group>}
-
-      <Form.Group controlId="examination-date">
-        <Form.Label>Datum vyšetření</Form.Label>
-        <ResponsiveDatePicker inline disabledKeyboardNavigation
-          id='examination-date'
-          selected={examDate}
-          onChange={date => setExamDate(date)}
-          minDate={new Date()}
-          maxDate={add(new Date(), { months: 2 })}
+  if (isLoading) {
+    return <Alert variant='info'>Načítám časové sloty</Alert>
+  } else {
+    return (
+      <Form noValidate id="covid-form">
+        <RadioGroup
+          id='examination-type'
+          label='Jaký druh vyšetření požadujete?'
+          value={examType}
+          setter={setExamType}
+          options={[
+            { id: EXAM_TYPE_PCR,
+                label: 'PCR vyšetření (výtěr z nosu a následné laboratorní zpracování)' },
+            { id: EXAM_TYPE_RAPID,
+              label: 'RAPID test (orientační test z kapky krve)' },
+          ]}
         />
-      </Form.Group>
 
-      <Form.Row>
-        <Form.Group as={Col} controlId="first-name">
-          <Form.Label>Jméno</Form.Label>
-          <Form.Control required
-            type="text"
-            placeholder="Vaše křestní jméno"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            isInvalid={!firstName}
+        <RadioGroup
+          id='requestor-type'
+          label='Kdo vyšetření požaduje?'
+          value={requestorType}
+          setter={setRequestorType}
+          options={[
+            { id: REQUESTOR_TYPE_PL,
+                label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
+            { id: REQUESTOR_TYPE_KHS,
+              label: 'KHS (k vyšetření jsem indikován hygienikem)' },
+            { id: REQUESTOR_TYPE_SAMOPL,
+              label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+          ]}
+        />
+
+        {requestorType === REQUESTOR_TYPE_SAMOPL ||
+          <Form.Group id="have-request-form">
+            <Form.Check
+              required
+              type="checkbox"
+              label="Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS"
+              checked={haveRequestForm}
+              onChange={() => setHaveRequestForm(!haveRequestForm)}
+              isInvalid={!haveRequestForm}
+              feedback='Bez této žádanky NENÍ další registrace možná, vyšetření nebude provedeno.'
+            />
+          </Form.Group>}
+
+        <Form.Group controlId="examination-date">
+          <Form.Label>Datum vyšetření</Form.Label>
+          <ResponsiveDatePicker inline disabledKeyboardNavigation
+            id='examination-date'
+            selected={examDate}
+            onChange={date => setExamDate(date)}
+            minDate={new Date()}
+            maxDate={add(new Date(), { months: 2 })}
           />
-          <Form.Control.Feedback type="invalid">
-            Tato položka je povinná
-          </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group as={Col} controlId="last-name">
-          <Form.Label>Příjmení</Form.Label>
-          <Form.Control required
+        <RadioGroup
+          id='time-slot'
+          label='Čas vyšetření'
+          value={timeSlotId}
+          setter={setTimeSlotId}
+          options={timeSlots.map(slot => ({ id: slot.id, label: slot.time_range }))}
+        />
+
+        <Form.Row>
+          <Form.Group as={Col} controlId="first-name">
+            <Form.Label>Jméno</Form.Label>
+            <Form.Control required
+              type="text"
+              placeholder="Vaše křestní jméno"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              isInvalid={!firstName}
+            />
+            <Form.Control.Feedback type="invalid">
+              Tato položka je povinná
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group as={Col} controlId="last-name">
+            <Form.Label>Příjmení</Form.Label>
+            <Form.Control required
             type="text"
             placeholder="Vaše příjmení"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             isInvalid={!lastName}
-          />
-          <Form.Control.Feedback type="invalid">
-            Tato položka je povinná
-          </Form.Control.Feedback>
-        </Form.Group>
-      </Form.Row>
+            />
+            <Form.Control.Feedback type="invalid">
+              Tato položka je povinná
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Form.Row>
 
-      <Form.Row>
-        <Form.Group as={Col} controlId="municipality">
-          <Form.Label>Bydliště (město/obec)</Form.Label>
+        <Form.Row>
+          <Form.Group as={Col} controlId="municipality">
+            <Form.Label>Bydliště (město/obec)</Form.Label>
           <Form.Control required
             type="text"
             placeholder="Vaše bydliště"
@@ -190,105 +221,115 @@ export default function CovidForm() {
             onChange={(e) => setMunicipality(e.target.value)}
             isInvalid={!municipality}
           />
-          <Form.Control.Feedback type="invalid">
-            Tato položka je povinná
-          </Form.Control.Feedback>
-        </Form.Group>
+        <Form.Control.Feedback type="invalid">
+          Tato položka je povinná
+        </Form.Control.Feedback>
+          </Form.Group>
 
-        <Form.Group as={Col} controlId="zip-code">
-          <Form.Label>PSČ</Form.Label>
-          <Form.Control required
+          <Form.Group as={Col} controlId="zip-code">
+            <Form.Label>PSČ</Form.Label>
+            <Form.Control required
             type="text"
             placeholder="Vaše poštovní směrovací číslo"
             value={zipCode}
             onChange={(e) => setZipCode(e.target.value)}
             isInvalid={!zipIsValid}
-          />
-          <Form.Control.Feedback type="invalid">
-            {zipCode ? 'Není validní PSČ' : 'Tato položka je povinná'}
-          </Form.Control.Feedback>
-        </Form.Group>
-      </Form.Row>
+            />
+            <Form.Control.Feedback type="invalid">
+              {zipCode ? 'Není validní PSČ' : 'Tato položka je povinná'}
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Form.Row>
 
-      <Form.Row>
-        <Form.Group as={Col} controlId="email">
-          <Form.Label>E-mailová adresa</Form.Label>
+        <Form.Row>
+          <Form.Group as={Col} controlId="email">
+            <Form.Label>E-mailová adresa</Form.Label>
+            <Form.Control required
+              type="email"
+              placeholder="Vaše e-mailová adresa"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              isInvalid={!emailIsValid}
+            />
+            <Form.Control.Feedback type="invalid">
+              {email ? 'Není validní emailová adresa' : 'Tato položka je povinná'}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group as={Col} controlId="phone">
+            <Form.Label>Telefonní číslo</Form.Label>
+            <Form.Control required
+              type="phone"
+              placeholder="Vaše telefonní číslo"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              isInvalid={!phoneIsValid}
+            />
+            <Form.Control.Feedback type="invalid">
+              {phoneNumber ? 'Není validní telefonní číslo' : 'Tato položka je povinná'}
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Form.Row>
+
+        <Form.Group controlId="insurance-number">
+          <Form.Label>Číslo pojištěnce (bez lomítka)</Form.Label>
           <Form.Control required
-            type="email"
-            placeholder="Vaše e-mailová adresa"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            isInvalid={!emailIsValid}
-          />
-          <Form.Control.Feedback type="invalid">
-            {email ? 'Není validní emailová adresa' : 'Tato položka je povinná'}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group as={Col} controlId="phone">
-          <Form.Label>Telefonní číslo</Form.Label>
-          <Form.Control required
-            type="phone"
-            placeholder="Vaše telefonní číslo"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            isInvalid={!phoneIsValid}
-          />
-          <Form.Control.Feedback type="invalid">
-            {phoneNumber ? 'Není validní telefonní číslo' : 'Tato položka je povinná'}
-          </Form.Control.Feedback>
-        </Form.Group>
-      </Form.Row>
-
-      <Form.Group controlId="insurance-number">
-        <Form.Label>Číslo pojištěnce (bez lomítka)</Form.Label>
-        <Form.Control required
           type="text"
           placeholder="Vaše číslo pojištěnce"
           value={insuranceNumber}
           onChange={(e) => setInsuranceNumber(e.target.value)}
           isInvalid={!insNumIsValid}
+          />
+          <Form.Control.Feedback type="invalid">
+            {insuranceNumber ? 'Není validní číslo pojištěnce' : 'Tato položka je povinná'}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <RadioGroup
+          id='insurance-company'
+          label='Zdravotní pojišťovna'
+          value={insuranceCompany}
+          setter={setInsuranceCompany}
+          options={[
+            { id: INSURANCE_COMPANY_VZP,    label: 'VZP'        },
+            { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP'       },
+            { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP'       },
+            { id: INSURANCE_COMPANY_OZP,    label: 'OZP'        },
+            { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ'        },
+            { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV'       },
+            { id: INSURANCE_COMPANY_RBP,    label: 'RBP'        },
+            { id: INSURANCE_COMPANY_SAMOPL, label: 'Samoplátce' },
+            { id: INSURANCE_COMPANY_KHS,
+              label: 'Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS' },
+          ]}
         />
-        <Form.Control.Feedback type="invalid">
-          {insuranceNumber ? 'Není validní číslo pojištěnce' : 'Tato položka je povinná'}
-        </Form.Control.Feedback>
-      </Form.Group>
 
-      <RadioGroup
-        id='insurance-company'
-        label='Zdravotní pojišťovna'
-        value={insuranceCompany}
-        setter={setInsuranceCompany}
-        options={[
-          { id: INSURANCE_COMPANY_VZP,    label: 'VZP'        },
-          { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP'       },
-          { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP'       },
-          { id: INSURANCE_COMPANY_OZP,    label: 'OZP'        },
-          { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ'        },
-          { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV'       },
-          { id: INSURANCE_COMPANY_RBP,    label: 'RBP'        },
-          { id: INSURANCE_COMPANY_SAMOPL, label: 'Samoplátce' },
-          { id: INSURANCE_COMPANY_KHS,
-            label: 'Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS' },
-        ]}
-      />
+        <Row>
+          <Col xs="auto">
+            <Button
+              variant={disableSubmit ? 'secondary' : 'primary'}
+              size="lg"
+              onClick={submit}
+              disabled={disableSubmit}
+            >
+              Registrovat se
+            </Button>
+          </Col>
 
-      <Row>
-        <Col xs="auto">
+          <Col>
+            {responseAlert}
+          </Col>
+        </Row>
+
+        {hasRegistered &&
           <Button
-            variant="primary"
+            variant='primary'
             size="lg"
-            onClick={submit}
-            disabled={!canSubmit || responseData?.status === 'OK'}
+            onClick={reset}
           >
-            Registrovat se
-          </Button>
-        </Col>
-
-        <Col>
-          {responseAlert}
-        </Col>
-      </Row>
-    </Form>
-  )
+            Nové zadání
+          </Button>}
+      </Form>
+    )
+  }
 }

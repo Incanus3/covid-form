@@ -22,6 +22,14 @@ form {
   margin-left: 24px;
 }
 
+.modal-body form {
+  margin-left: 0;
+
+  .row:last-child {
+    margin-bottom: 0;
+  }
+}
+
 .form-label {
   font-weight: bold;
 }
@@ -37,4 +45,8 @@ form {
 
 .form-group#have-request-form .form-check-label {
   font-weight: bold;
+}
+
+.react-datepicker__input-container .form-control[readonly] {
+  background-color: #fff;
 }

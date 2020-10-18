@@ -7,6 +7,8 @@ import cs                                               from 'date-fns/locale/cs
 registerLocale('cs', cs);
 setDefaultLocale('cs');
 
+export { DatePicker };
+
 export function Radio(props) {
   return (
     <Form.Check
