@@ -65,14 +65,15 @@ export default function CovidForm() {
   }, [])
 
   const submit = async () => {
-    const data = keysToSnakeCase({
-      requestorType, examType, examDate,
-      firstName, lastName,
-      municipality, zipCode,
-      email, phoneNumber,
-      insuranceNumber, insuranceCompany,
-      timeSlotId
-    });
+    const data = {
+      client: keysToSnakeCase({
+        firstName, lastName, municipality, zipCode,
+        email, phoneNumber, insuranceNumber, insuranceCompany,
+      }),
+      exam: keysToSnakeCase({
+        requestorType, examType, examDate, timeSlotId
+      })
+    };
 
     console.log('submitting', data);
 
