@@ -2,6 +2,7 @@ import React, { useState, useEffect    } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 import { capitalize, join              } from 'lodash';
 import add                               from 'date-fns/add';
+import isWeekend                         from 'date-fns/isWeekend';
 
 import { RadioGroup, ResponsiveDatePicker } from './utils/components';
 import { keysToSnakeCase }                  from './utils/generic';
@@ -171,6 +172,7 @@ export default function CovidForm() {
             onChange={date => setExamDate(date)}
             minDate={new Date()}
             maxDate={add(new Date(), { months: 2 })}
+            filterDate={(date) => !isWeekend(date)}
           />
         </Form.Group>
 
