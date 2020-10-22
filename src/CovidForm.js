@@ -216,10 +216,10 @@ export default function CovidForm() {
 
         <Form.Row>
           <Form.Group as={Col} controlId="municipality">
-            <Form.Label>Bydliště (město/obec)</Form.Label>
+            <Form.Label>Město/obec, kde aktuálně pobýváte</Form.Label>
           <Form.Control required
             type="text"
-            placeholder="Vaše bydliště"
+            placeholder="Vaše současné místo pobytu (město/obec)"
             value={municipality}
             onChange={(e) => setMunicipality(e.target.value)}
             isInvalid={!municipality}
