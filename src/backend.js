@@ -1,4 +1,3 @@
-import 'core-js/stable/url';
 import { assign } from 'lodash';
 import config from './config'
 

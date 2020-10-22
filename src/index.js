@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import 'promise-polyfill/src/polyfill';
+import 'core-js/stable/url';
+import 'core-js/stable/promise';
+import 'core-js/stable/array/fill';
+import 'core-js/stable/object/assign';
 import 'isomorphic-fetch';
 import './index.scss';
 import App from './App';

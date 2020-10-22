@@ -53,12 +53,17 @@ export function ResponsiveDatePicker(props) {
 
   if (containerElement) {
     var monthContainerElement   = containerElement.getElementsByClassName(MONTH_CONTAINER_CLASS)[0];
-    var containingColumnElement = containerElement.closest(".col");
 
-    var monthsToShow = Math.max(1, Math.floor(
-      (containingColumnElement.clientWidth - MAX_EXPECTED_COL_PADDING)
-      / monthContainerElement.clientWidth
-    ));
+    if (containerElement.closest) {
+      var containingColumnElement = containerElement.closest(".col");
+
+      var monthsToShow = Math.max(1, Math.floor(
+        (containingColumnElement.clientWidth - MAX_EXPECTED_COL_PADDING)
+        / monthContainerElement.clientWidth
+      ));
+    } else {
+      var monthsToShow = 2;
+    }
 
     if (monthsToShow !== monthsShown) {
       setMonthsShown(monthsToShow);
