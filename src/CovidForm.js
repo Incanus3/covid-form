@@ -1,13 +1,11 @@
 import React, { useState, useEffect    } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 import { capitalize, join              } from 'lodash';
-import add                               from 'date-fns/add';
-import parseISO                          from 'date-fns/parseISO';
-import isWeekend                         from 'date-fns/isWeekend';
+import { add, parseISO, isWeekend      } from 'date-fns';
 
 import { RadioGroup, ResponsiveDatePicker } from './utils/components';
-import { keysToSnakeCase }                  from './utils/generic';
-import { request }                          from './backend';
+import { formatDate, keysToSnakeCase      } from './utils/generic';
+import { request                          } from './backend';
 
 const ZIP_REGEX    = /^\d{3} ?\d{2}$/;
 const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
@@ -57,6 +55,9 @@ export default function CovidForm() {
   const [loadingTimeSlots, setLoadingTimeSlots] = useState(true);
   const [loadingFullDates, setLoadingFullDates] = useState(true);
 
+  const minDate = new Date();
+  const maxDate = add(new Date(), { months: 2 });
+
   useEffect(() => {
     async function loadTimeSlots() {
       const { body: data } = await request('GET', '/crud/time_slots');
@@ -70,7 +71,9 @@ export default function CovidForm() {
 
   useEffect(() => {
     async function loadFullDates() {
-      const { body: data } = await request('GET', '/capacity/full_dates');
+      const { body: data } = await request('GET', '/capacity/full_dates', {
+        params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
+      });
       // TODO: handle failure
       setFullDates(data.dates.map((date) => parseISO(date)));
       console.log('HERE')
@@ -192,8 +195,8 @@ export default function CovidForm() {
             id='examination-date'
             selected={examDate}
             onChange={date => setExamDate(date)}
-            minDate={new Date()}
-            maxDate={add(new Date(), { months: 2 })}
+            minDate={minDate}
+            maxDate={maxDate}
             excludeDates={fullDates}
             filterDate={(date) => !isWeekend(date)}
           />

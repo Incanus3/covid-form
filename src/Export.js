@@ -1,14 +1,11 @@
 import React, { useState                      } from 'react';
 import { Row, Col, Button, Alert, Form, Modal } from 'react-bootstrap';
-import { formatISO                            } from 'date-fns';
 import { capitalize                           } from 'lodash';
 import { saveAs                               } from 'file-saver';
 
-import { request          } from './backend';
-import { Success, Failure } from './utils/generic';
-import { DatePicker       } from './utils/components';
-
-const formatDate = (date) => formatISO(date, { representation: 'date' });
+import { request                      } from './backend';
+import { Success, Failure, formatDate } from './utils/generic';
+import { DatePicker                   } from './utils/components';
 
 async function saveExport(password, startDate, endDate) {
   if (typeof(password) === 'string') {
