@@ -2,6 +2,7 @@ import React, { useState, useEffect    } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 import { capitalize, join              } from 'lodash';
 import add                               from 'date-fns/add';
+import parseISO                          from 'date-fns/parseISO';
 import isWeekend                         from 'date-fns/isWeekend';
 
 import { RadioGroup, ResponsiveDatePicker } from './utils/components';
@@ -52,7 +53,9 @@ export default function CovidForm() {
   const [insuranceCompany, setInsuranceCompany] = useState(111);
   const [responseData,     setResponseData]     = useState(null);
   const [timeSlots,        setTimeSlots]        = useState(null);
-  const [isLoading,        setIsLoading]        = useState(true);
+  const [fullDates,        setFullDates]        = useState(null);
+  const [loadingTimeSlots, setLoadingTimeSlots] = useState(true);
+  const [loadingFullDates, setLoadingFullDates] = useState(true);
 
   useEffect(() => {
     async function loadTimeSlots() {
@@ -60,9 +63,21 @@ export default function CovidForm() {
       // TODO: handle failure
       setTimeSlots(data.time_slots);
       setTimeSlotId(data.time_slots[0].id);
-      setIsLoading(false);
+      setLoadingTimeSlots(false);
     }
     loadTimeSlots();
+  }, [])
+
+  useEffect(() => {
+    async function loadFullDates() {
+      const { body: data } = await request('GET', '/capacity/full_dates');
+      // TODO: handle failure
+      setFullDates(data.dates.map((date) => parseISO(date)));
+      console.log('HERE')
+      console.log(data)
+      setLoadingFullDates(false);
+    }
+    loadFullDates();
   }, [])
 
   const submit = async () => {
@@ -118,8 +133,15 @@ export default function CovidForm() {
       responseAlert = null;
   }
 
-  if (isLoading) {
-    return <Alert variant='info'>Načítám časové sloty</Alert>
+  if (loadingTimeSlots || loadingFullDates) {
+    return (
+      <div>
+        {loadingTimeSlots &&
+         <Alert variant='info'>Načítám časové sloty</Alert>}
+        {loadingFullDates &&
+         <Alert variant='info'>Načítám kapacity pro jednotlivé dny</Alert>}
+      </div>
+    )
   } else {
     return (
       <Form noValidate id="covid-form">
@@ -172,6 +194,7 @@ export default function CovidForm() {
             onChange={date => setExamDate(date)}
             minDate={new Date()}
             maxDate={add(new Date(), { months: 2 })}
+            excludeDates={fullDates}
             filterDate={(date) => !isWeekend(date)}
           />
         </Form.Group>
