@@ -1,4 +1,3 @@
-import React from 'react';
 import { Alert, Card } from 'react-bootstrap';
 
 export default function CovidCard() {

@@ -1,8 +1,8 @@
 import 'element-closest';
-import React, { useState, useEffect }                   from 'react';
-import { Form }                                         from 'react-bootstrap';
-import DatePicker, { registerLocale, setDefaultLocale } from 'react-datepicker';
 import cs                                               from 'date-fns/locale/cs';
+import { useState, useEffect                          } from 'react';
+import { Form                                         } from 'react-bootstrap';
+import DatePicker, { registerLocale, setDefaultLocale } from 'react-datepicker';
 
 registerLocale('cs', cs);
 setDefaultLocale('cs');
