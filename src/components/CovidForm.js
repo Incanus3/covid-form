@@ -1,5 +1,5 @@
 import { add, parseISO, isWeekend      } from 'date-fns';
-import { capitalize, join              } from 'lodash';
+import { capitalize, join, uniq        } from 'lodash';
 import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
@@ -114,7 +114,7 @@ export default function CovidForm() {
   const zipIsValid    = zipCode.match(ZIP_REGEX);
   const emailIsValid  = email.match(EMAIL_REGEX);
   const phoneIsValid  = phoneNumber.match(PHONE_REGEX);
-  const insNumIsValid = requestorType === REQUESTOR_TYPE_SAMOPL
+  const insNumIsValid = insuranceCompany === INSURANCE_COMPANY_KHS
     || isValidInsuranceNumber(insuranceNumber);
   const canSubmit = firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
@@ -122,15 +122,27 @@ export default function CovidForm() {
 
   const hasRegistered = responseData?.status === 'OK';
   const disableSubmit = !canSubmit || hasRegistered;
-  var responseAlert;
+
+  var commonErrors = null;
+  var insuranceNumberErrors = null;
+  var responseAlert = null;
 
   switch(responseData?.status) {
     case 'OK':
       responseAlert = <Alert variant='success'>Vaše registrace byla úspěšná</Alert>;
       break;
     case 'ERROR':
-      const joinedErrors = join(responseData.error.map((error) => capitalize(error) + '.'), ' ');
-      responseAlert      = <Alert variant='danger'>{joinedErrors}</Alert>;
+      if (responseData.error) {
+        commonErrors = join(responseData.error.map((error) => capitalize(error) + '.'), ' ');
+      } else {
+        commonErrors = 'Došlo k chybě';
+      }
+
+      if (responseData.client && responseData.client.insurance_number) {
+        insuranceNumberErrors = join(uniq(responseData.client.insurance_number), ', ');
+      }
+
+      responseAlert = <Alert variant='danger'>{commonErrors}</Alert>;
       break;
     default:
       responseAlert = null;
@@ -307,10 +319,12 @@ export default function CovidForm() {
           placeholder="Vaše číslo pojištěnce"
           value={insuranceNumber}
           onChange={(e) => setInsuranceNumber(e.target.value)}
-          isInvalid={!insNumIsValid}
+          isInvalid={!insNumIsValid || insuranceNumberErrors}
           />
           <Form.Control.Feedback type="invalid">
-            {insuranceNumber ? 'Není validní číslo pojištěnce' : 'Tato položka je povinná'}
+            {insuranceNumber
+              ? `Není validní číslo pojištěnce${insuranceNumberErrors ? ': ' + insuranceNumberErrors : ''}`
+              : 'Tato položka je povinná'}
           </Form.Control.Feedback>
         </Form.Group>
 
