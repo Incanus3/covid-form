@@ -17,8 +17,14 @@ export async function request(method, path, { params = null, data = null, header
     options['body'] = JSON.stringify(data);
   }
 
-  const response = await fetch(url, options)
-  console.log('received', response);
+  return await fetch(url, options);
+}
+
+export async function jsonRequest(method, path, { params = null, data = null, headers = {} } = {}) {
+  const response = await request(method, path, { params, data, headers });
   const body     = await response.json();
-  return { status: response.status, body }
+
+  console.log('received', response, body);
+
+  return { status: response.status, response, body };
 }

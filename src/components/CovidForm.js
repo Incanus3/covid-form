@@ -3,7 +3,7 @@ import { capitalize, join, uniq        } from 'lodash';
 import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
-import { request                          } from '../backend';
+import { jsonRequest                      } from '../backend';
 import { formatDate, keysToSnakeCase      } from '../utils/generic';
 import { RadioGroup, ResponsiveDatePicker } from '../utils/components';
 
@@ -60,7 +60,7 @@ export default function CovidForm() {
 
   useEffect(() => {
     async function loadTimeSlots() {
-      const { body: data } = await request('GET', '/crud/time_slots');
+      const { body: data } = await jsonRequest('GET', '/crud/time_slots');
       // TODO: handle failure
       setTimeSlots(data.time_slots);
       setTimeSlotId(data.time_slots[0].id);
@@ -71,7 +71,7 @@ export default function CovidForm() {
 
   useEffect(() => {
     async function loadFullDates() {
-      const { body: data } = await request('GET', '/capacity/full_dates', {
+      const { body: data } = await jsonRequest('GET', '/capacity/full_dates', {
         params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
       });
       // TODO: handle failure
@@ -96,7 +96,7 @@ export default function CovidForm() {
 
     console.log('submitting', data);
 
-    const { body } = await request('post', '/register', { data });
+    const { body } = await jsonRequest('post', '/register', { data });
     console.log(body);
     setResponseData(body);
   }

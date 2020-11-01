@@ -13,16 +13,16 @@ async function saveExport(password, startDate, endDate) {
       'Authorization': `Password ${password}`,
     }
 
-    const { status, body } = await request('GET', '/export', {
+    const response = await request('GET', '/export', {
       headers, params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
     })
 
-    if (status === 200) {
-      saveAs(new Blob([body.csv], { type: 'text/csv;charset=utf-8' }), 'export.csv');
+    if (response.status === 200) {
+      saveAs(await response.blob(), 'export.csv');
 
       return new Success();
     } else {
-      return new Failure(body.error);
+      return new Failure((await response.json()).error);
     }
   }
 }
