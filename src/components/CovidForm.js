@@ -72,7 +72,7 @@ function ExamTypeSelection(props) {
 function ExamTimeSelection(props) {
   const { timeSlots, timeSlotId, setTimeSlotId, loading } = props;
 
-  if (loading || timeSlots.lenth === 0) {
+  if (loading || timeSlots.length === 0) {
     let alertVariant, alertText;
 
     if (loading) {
