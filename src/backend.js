@@ -2,6 +2,8 @@ import { assign } from 'lodash';
 import config from './config'
 
 export async function request(method, path, { params = null, data = null, headers = {} } = {}) {
+  console.log(`making ${method} request to ${path} with`, params);
+
   const url = new URL(config.base_url + path);
 
   if (params) {
@@ -14,6 +16,8 @@ export async function request(method, path, { params = null, data = null, header
   };
 
   if (data) {
+    console.log('data:', data, JSON.stringify(data));
+
     options['body'] = JSON.stringify(data);
   }
 
