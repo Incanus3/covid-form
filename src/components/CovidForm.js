@@ -12,6 +12,7 @@ const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
 const PHONE_PREFIX = '(\\+|00)\\d{2,3}'
 const PHONE_REGEX  = RegExp(`^(${PHONE_PREFIX}|\\(${PHONE_PREFIX}\\))? ?[1-9]\\d{2} ?\\d{3} ?\\d{3}$`);
 
+const EXAM_TYPE_AG    = 'ag'
 const EXAM_TYPE_PCR   = 'pcr'
 const EXAM_TYPE_RAPID = 'rapid'
 
@@ -218,7 +219,7 @@ export default function CovidForm() {
     || isValidInsuranceNumber(insuranceNumber);
   const canSubmit = firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
-    && (requestorType === REQUESTOR_TYPE_SAMOPL || haveRequestForm);
+    && (requestorType === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG || haveRequestForm);
 
   const hasRegistered = responseData?.status === 'OK';
   const disableSubmit = !canSubmit || hasRegistered;
@@ -275,7 +276,7 @@ export default function CovidForm() {
         ]}
       />
 
-      {requestorType === REQUESTOR_TYPE_SAMOPL ||
+      {requestorType === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG ||
         <Form.Group id="have-request-form">
           <Form.Check
             required
