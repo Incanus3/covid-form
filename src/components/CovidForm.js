@@ -35,6 +35,39 @@ function isValidInsuranceNumber(input) {
   return input.match(/^\d{9,10}$/) && (length === 9 || input % 11 === 0);
 }
 
+function ExamTypeSelection(props) {
+  const { examTypes, examTypeId, setExamTypeId, loading, loadTimeSlots } = props;
+
+  if (loading || examTypes.lenth === 0) {
+    let alertVariant, alertText;
+
+    if (loading) {
+      alertVariant = 'info';
+      alertText    = 'Načítám druhy vyšetření';
+    } else {
+      alertVariant = 'danger';
+      alertText    = 'Nebyly nalezeny žádné druhy vyšetření.';
+    }
+
+    return (
+      <Form.Group controlId="examination-date">
+        <Form.Label>Čas vyšetření</Form.Label>
+        <Alert variant={alertVariant}>{alertText}</Alert>
+      </Form.Group>
+    )
+  } else {
+    return (
+      <RadioGroup
+        id='examination-type'
+        label='Jaký druh vyšetření požadujete?'
+        value={examTypeId}
+        setter={(examTypeId) => { loadTimeSlots(examTypeId); setExamTypeId(examTypeId); }}
+        options={examTypes.map(examType => ({ id: examType.id, label: examType.description }))}
+      />
+    )
+  }
+}
+
 function ExamTimeSelection(props) {
   const { timeSlots, timeSlotId, setTimeSlotId, loading } = props;
 
@@ -69,10 +102,10 @@ function ExamTimeSelection(props) {
 }
 
 export default function CovidForm() {
-  const [examType,         setExamType]         = useState(EXAM_TYPE_PCR);
   const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
   const [haveRequestForm,  setHaveRequestForm]  = useState(false);
   const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
+  const [examTypeId,       setExamTypeId]       = useState(EXAM_TYPE_PCR);
   const [timeSlotId,       setTimeSlotId]       = useState(null);
   const [firstName,        setFirstName]        = useState('');
   const [lastName,         setLastName]         = useState('');
@@ -83,29 +116,55 @@ export default function CovidForm() {
   const [insuranceNumber,  setInsuranceNumber]  = useState('');
   const [insuranceCompany, setInsuranceCompany] = useState(111);
   const [responseData,     setResponseData]     = useState(null);
+  const [examTypes,        setExamTypes]        = useState([]);
   const [timeSlots,        setTimeSlots]        = useState([]);
   const [fullDates,        setFullDates]        = useState(null);
+  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
   const [loadingTimeSlots, setLoadingTimeSlots] = useState(true);
   // const [loadingFullDates, setLoadingFullDates] = useState(true);
 
   const minDate = new Date();
   const maxDate = add(new Date(), { months: 2 });
 
-  async function loadTimeSlots(examType) {
+  // consider creating a custom hook for these
+  async function loadExamTypes() {
+    setLoadingExamTypes(true);
+
+    const { body: data } = await jsonRequest('GET', '/crud/exam_types');
+
+    const firstId = data.exam_types[0]?.id || null
+
+    // TODO: handle failure
+    setExamTypes(data.exam_types);
+    setExamTypeId(firstId);
+    setLoadingExamTypes(false);
+
+    return firstId;
+  }
+
+  async function loadTimeSlots(examTypeId) {
     setLoadingTimeSlots(true);
 
     const { body: data } = await jsonRequest('GET', '/capacity/available_time_slots', {
-      params: { exam_type: examType }
+      params: { exam_type: examTypeId }
     });
+
+    const firstId = data.time_slots[0]?.id || null
 
     // TODO: handle failure
     setTimeSlots(data.time_slots);
-    setTimeSlotId(data.time_slots[0]?.id || null);
+    setTimeSlotId(firstId);
     setLoadingTimeSlots(false);
+
+    return firstId;
   }
 
   useEffect(() => {
-    loadTimeSlots(examType);
+    async function loadData() {
+      loadTimeSlots(await loadExamTypes());
+    }
+
+    loadData();
   // eslint-disable-next-line
   }, [])
 
@@ -131,7 +190,7 @@ export default function CovidForm() {
         email, phoneNumber, insuranceNumber, insuranceCompany,
       }),
       exam: keysToSnakeCase({
-        requestorType, examType, examDate, timeSlotId
+        requestorType, examType: examTypeId, examDate, timeSlotId
       })
     };
 
@@ -196,17 +255,9 @@ export default function CovidForm() {
   // } else {
   return (
     <Form noValidate id="covid-form">
-      <RadioGroup
-        id='examination-type'
-        label='Jaký druh vyšetření požadujete?'
-        value={examType}
-        setter={(examType) => { loadTimeSlots(examType); setExamType(examType); }}
-        options={[
-          { id: EXAM_TYPE_PCR,
-              label: 'PCR vyšetření (výtěr z nosu a následné laboratorní zpracování)' },
-          { id: EXAM_TYPE_RAPID,
-            label: 'RAPID test (orientační test z kapky krve)' },
-        ]}
+      <ExamTypeSelection
+       examTypes={examTypes} examTypeId={examTypeId} setExamTypeId={setExamTypeId}
+       loading={loadingExamTypes} loadTimeSlots={loadTimeSlots}
       />
 
       <RadioGroup
@@ -216,7 +267,7 @@ export default function CovidForm() {
         setter={setRequestorType}
         options={[
           { id: REQUESTOR_TYPE_PL,
-              label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
+            label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
           { id: REQUESTOR_TYPE_KHS,
             label: 'KHS (k vyšetření jsem indikován hygienikem)' },
           { id: REQUESTOR_TYPE_SAMOPL,
