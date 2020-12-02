@@ -102,25 +102,26 @@ function ExamTimeSelection(props) {
 }
 
 export default function CovidForm() {
-  const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
-  const [haveRequestForm,  setHaveRequestForm]  = useState(false);
-  const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
-  const [examTypeId,       setExamTypeId]       = useState(null);
-  const [timeSlotId,       setTimeSlotId]       = useState(null);
-  const [firstName,        setFirstName]        = useState('');
-  const [lastName,         setLastName]         = useState('');
-  const [municipality,     setMunicipality]     = useState('');
-  const [zipCode,          setZipCode]          = useState('');
-  const [email,            setEmail]            = useState('');
-  const [phoneNumber,      setPhoneNumber]      = useState('');
-  const [insuranceNumber,  setInsuranceNumber]  = useState('');
-  const [insuranceCompany, setInsuranceCompany] = useState(111);
-  const [responseData,     setResponseData]     = useState(null);
-  const [examTypes,        setExamTypes]        = useState([]);
-  const [timeSlots,        setTimeSlots]        = useState([]);
-  const [fullDates,        setFullDates]        = useState(null);
-  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
-  const [loadingTimeSlots, setLoadingTimeSlots] = useState(true);
+  const [requestorType,            setRequestorType]            = useState(REQUESTOR_TYPE_PL);
+  const [haveRequestForm,          setHaveRequestForm]          = useState(false);
+  const [examDate,                 setExamDate]                 = useState(add(new Date(), { days: 1 }));
+  const [examTypeId,               setExamTypeId]               = useState(null);
+  const [timeSlotId,               setTimeSlotId]               = useState(null);
+  const [firstName,                setFirstName]                = useState('');
+  const [lastName,                 setLastName]                 = useState('');
+  const [municipality,             setMunicipality]             = useState('');
+  const [zipCode,                  setZipCode]                  = useState('');
+  const [email,                    setEmail]                    = useState('');
+  const [phoneNumber,              setPhoneNumber]              = useState('');
+  const [insuranceNumber,          setInsuranceNumber]          = useState('');
+  const [insuranceCompany,         setInsuranceCompany]         = useState(111);
+  const [responseData,             setResponseData]             = useState(null);
+  const [examTypes,                setExamTypes]                = useState([]);
+  const [timeSlots,                setTimeSlots]                = useState([]);
+  const [disabledRequestorTypeIds, setDisabledRequestorTypeIds] = useState([]);
+  const [fullDates,                setFullDates]                = useState(null);
+  const [loadingExamTypes,         setLoadingExamTypes]         = useState(true);
+  const [loadingTimeSlots,         setLoadingTimeSlots]         = useState(true);
   // const [loadingFullDates, setLoadingFullDates] = useState(true);
 
   const minDate = new Date();
@@ -131,8 +132,10 @@ export default function CovidForm() {
 
     if (examTypeId === EXAM_TYPE_AG) {
       setRequestorType(REQUESTOR_TYPE_AG);
+      setDisabledRequestorTypeIds([REQUESTOR_TYPE_PL, REQUESTOR_TYPE_KHS, REQUESTOR_TYPE_SAMOPL]);
     } else {
       setRequestorType(REQUESTOR_TYPE_PL);
+      setDisabledRequestorTypeIds([REQUESTOR_TYPE_AG]);
     }
   }
 
@@ -270,21 +273,22 @@ export default function CovidForm() {
         loading={loadingExamTypes} loadTimeSlots={loadTimeSlots}
       />
 
-      {examTypeId === EXAM_TYPE_AG ||
-        <RadioGroup
-          id='requestor-type'
-          label='Kdo vyšetření požaduje?'
-          value={requestorType}
-          setter={setRequestorType}
-          options={[
-            { id: REQUESTOR_TYPE_PL,
-              label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
-            { id: REQUESTOR_TYPE_KHS,
-              label: 'KHS (k vyšetření jsem indikován hygienikem)' },
-            { id: REQUESTOR_TYPE_SAMOPL,
-              label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
-          ]}
-        />}
+      <RadioGroup
+        id='requestor-type'
+        label='Kdo vyšetření požaduje?'
+        value={requestorType}
+        setter={setRequestorType}
+        disabledIds={disabledRequestorTypeIds}
+        options={[
+          { id: REQUESTOR_TYPE_AG,
+            label: 'Učitel (jsem pedagogickým pracovníkem)' },
+          { id: REQUESTOR_TYPE_PL,
+            label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
+          { id: REQUESTOR_TYPE_KHS,
+            label: 'KHS (k vyšetření jsem indikován hygienikem)' },
+          { id: REQUESTOR_TYPE_SAMOPL,
+            label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+        ]} />
 
       {requestorType === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG ||
         <Form.Group id="have-request-form">

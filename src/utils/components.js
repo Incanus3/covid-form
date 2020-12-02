@@ -16,6 +16,7 @@ export function Radio(props) {
       label={props.label}
       id={props.id}
       checked={props.value === props.id}
+      disabled={props.disabled}
       onChange={() => props.onChange(props.id)}
     />
   )
@@ -32,6 +33,7 @@ export function RadioGroup(props) {
           key={option.id}
           value={props.value}
           onChange={props.setter}
+          disabled={(props.disabledIds || []).includes(option.id)}
         />)}
     </Form.Group>
   )
