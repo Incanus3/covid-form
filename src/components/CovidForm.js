@@ -12,10 +12,9 @@ const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
 const PHONE_PREFIX = '(\\+|00)\\d{2,3}'
 const PHONE_REGEX  = RegExp(`^(${PHONE_PREFIX}|\\(${PHONE_PREFIX}\\))? ?[1-9]\\d{2} ?\\d{3} ?\\d{3}$`);
 
-const EXAM_TYPE_AG    = 'ag'
-const EXAM_TYPE_PCR   = 'pcr'
-const EXAM_TYPE_RAPID = 'rapid'
+const EXAM_TYPE_AG = 'ag'
 
+const REQUESTOR_TYPE_AG     = 'ag'
 const REQUESTOR_TYPE_PL     = 'pl'
 const REQUESTOR_TYPE_KHS    = 'khs'
 const REQUESTOR_TYPE_SAMOPL = 'samopl'
@@ -37,7 +36,7 @@ function isValidInsuranceNumber(input) {
 }
 
 function ExamTypeSelection(props) {
-  const { examTypes, examTypeId, setExamTypeId, loading, loadTimeSlots } = props;
+  const { examTypes, examTypeId, setExamType, setRequestorType, loading, loadTimeSlots } = props;
 
   if (loading || examTypes.lenth === 0) {
     let alertVariant, alertText;
@@ -57,13 +56,13 @@ function ExamTypeSelection(props) {
       </Form.Group>
     )
   } else {
+    const options  = examTypes.map(examType => ({ id: examType.id, label: examType.description }))
+    const onChange = (examTypeId) => { loadTimeSlots(examTypeId); setExamType(examTypeId); }
+
     return (
       <RadioGroup
-        id='examination-type'
-        label='Jaký druh vyšetření požadujete?'
-        value={examTypeId}
-        setter={(examTypeId) => { loadTimeSlots(examTypeId); setExamTypeId(examTypeId); }}
-        options={examTypes.map(examType => ({ id: examType.id, label: examType.description }))}
+        id='examination-type' label='Jaký druh vyšetření požadujete?'
+        value={examTypeId} setter={onChange} options={options}
       />
     )
   }
@@ -106,7 +105,7 @@ export default function CovidForm() {
   const [requestorType,    setRequestorType]    = useState(REQUESTOR_TYPE_PL);
   const [haveRequestForm,  setHaveRequestForm]  = useState(false);
   const [examDate,         setExamDate]         = useState(add(new Date(), { days: 1 }));
-  const [examTypeId,       setExamTypeId]       = useState(EXAM_TYPE_PCR);
+  const [examTypeId,       setExamTypeId]       = useState(null);
   const [timeSlotId,       setTimeSlotId]       = useState(null);
   const [firstName,        setFirstName]        = useState('');
   const [lastName,         setLastName]         = useState('');
@@ -127,6 +126,16 @@ export default function CovidForm() {
   const minDate = new Date();
   const maxDate = add(new Date(), { months: 2 });
 
+  function setExamType(examTypeId) {
+    setExamTypeId(examTypeId);
+
+    if (examTypeId === EXAM_TYPE_AG) {
+      setRequestorType(REQUESTOR_TYPE_AG);
+    } else {
+      setRequestorType(REQUESTOR_TYPE_PL);
+    }
+  }
+
   // consider creating a custom hook for these
   async function loadExamTypes() {
     setLoadingExamTypes(true);
@@ -137,7 +146,7 @@ export default function CovidForm() {
 
     // TODO: handle failure
     setExamTypes(data.exam_types);
-    setExamTypeId(firstId);
+    setExamType(firstId);
     setLoadingExamTypes(false);
 
     return firstId;
@@ -257,24 +266,25 @@ export default function CovidForm() {
   return (
     <Form noValidate id="covid-form">
       <ExamTypeSelection
-       examTypes={examTypes} examTypeId={examTypeId} setExamTypeId={setExamTypeId}
-       loading={loadingExamTypes} loadTimeSlots={loadTimeSlots}
+        examTypes={examTypes} examTypeId={examTypeId} setExamType={setExamType}
+        loading={loadingExamTypes} loadTimeSlots={loadTimeSlots}
       />
 
-      <RadioGroup
-        id='requestor-type'
-        label='Kdo vyšetření požaduje?'
-        value={requestorType}
-        setter={setRequestorType}
-        options={[
-          { id: REQUESTOR_TYPE_PL,
-            label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
-          { id: REQUESTOR_TYPE_KHS,
-            label: 'KHS (k vyšetření jsem indikován hygienikem)' },
-          { id: REQUESTOR_TYPE_SAMOPL,
-            label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
-        ]}
-      />
+      {examTypeId === EXAM_TYPE_AG ||
+        <RadioGroup
+          id='requestor-type'
+          label='Kdo vyšetření požaduje?'
+          value={requestorType}
+          setter={setRequestorType}
+          options={[
+            { id: REQUESTOR_TYPE_PL,
+              label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
+            { id: REQUESTOR_TYPE_KHS,
+              label: 'KHS (k vyšetření jsem indikován hygienikem)' },
+            { id: REQUESTOR_TYPE_SAMOPL,
+              label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+          ]}
+        />}
 
       {requestorType === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG ||
         <Form.Group id="have-request-form">
