@@ -1,11 +1,9 @@
 import React    from 'react';
 import ReactDOM from 'react-dom';
-import 'core-js/stable/url';
-import 'core-js/stable/promise';
-import 'core-js/stable/array/fill';
-import 'core-js/stable/object/assign';
-import 'isomorphic-fetch';
+
+import './polyfill';
 import './index.scss';
+
 import App from './components/App';
 
 function render(Component) {

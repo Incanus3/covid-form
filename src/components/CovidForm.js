@@ -1,5 +1,5 @@
 import { add, parseISO, isWeekend      } from 'date-fns';
-import { capitalize, join, uniq        } from 'lodash';
+import { capitalize, join, map, uniq   } from 'lodash';
 import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
@@ -12,7 +12,8 @@ const EMAIL_REGEX  = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]{2,}$/;
 const PHONE_PREFIX = '(\\+|00)\\d{2,3}'
 const PHONE_REGEX  = RegExp(`^(${PHONE_PREFIX}|\\(${PHONE_PREFIX}\\))? ?[1-9]\\d{2} ?\\d{3} ?\\d{3}$`);
 
-const EXAM_TYPE_AG = 'ag'
+const EXAM_TYPE_AG  = 'ag'
+const EXAM_TYPE_PCR = 'pcr'
 
 const REQUESTOR_TYPE_AG     = 'ag'
 const REQUESTOR_TYPE_PL     = 'pl'
@@ -36,6 +37,9 @@ function isValidInsuranceNumber(input) {
 }
 
 function ExamTypeSelection(props) {
+  const id    = 'examination-type';
+  const label = 'Jaký druh vyšetření požadujete?';
+
   const { examTypes, examTypeId, setExamType, setRequestorType, loading, loadTimeSlots } = props;
 
   if (loading || examTypes.lenth === 0) {
@@ -50,8 +54,8 @@ function ExamTypeSelection(props) {
     }
 
     return (
-      <Form.Group controlId="examination-date">
-        <Form.Label>Čas vyšetření</Form.Label>
+      <Form.Group controlId={id}>
+        <Form.Label>{label}</Form.Label>
         <Alert variant={alertVariant}>{alertText}</Alert>
       </Form.Group>
     )
@@ -61,7 +65,7 @@ function ExamTypeSelection(props) {
 
     return (
       <RadioGroup
-        id='examination-type' label='Jaký druh vyšetření požadujete?'
+        id={id} label={label}
         value={examTypeId} setter={onChange} options={options}
       />
     )
@@ -139,20 +143,30 @@ export default function CovidForm() {
     }
   }
 
-  // consider creating a custom hook for these
   async function loadExamTypes() {
     setLoadingExamTypes(true);
 
     const { body: data } = await jsonRequest('GET', '/crud/exam_types');
+    let examTypeId;
 
-    const firstId = data.exam_types[0]?.id || null
+    if (data.exam_types.length === 0) {
+      examTypeId = null;
+    } else {
+      const examTypeIds = map(data.exam_types, 'id')
+
+      if (examTypeIds.includes(EXAM_TYPE_PCR)) {
+        examTypeId = EXAM_TYPE_PCR;
+      } else {
+        examTypeId = examTypeIds[0];
+      }
+    }
 
     // TODO: handle failure
     setExamTypes(data.exam_types);
-    setExamType(firstId);
+    setExamType(examTypeId);
     setLoadingExamTypes(false);
 
-    return firstId;
+    return examTypeId;
   }
 
   async function loadTimeSlots(examTypeId) {
