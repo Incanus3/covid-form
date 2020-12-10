@@ -10,13 +10,11 @@ import {
   INSURANCE_COMPANY_SAMOPL
 } from './constants';
 
-export function ExamTypeSelection({
-  examTypes, examTypeId, setExamType, setRequestorType, loading, loadTimeSlots
-}) {
+export function ExamTypeSelection({ options, value, setValue, disabledValues, loading }) {
   const id    = 'examination-type';
   const label = 'Jaký druh vyšetření požadujete?';
 
-  if (loading || examTypes.lenth === 0) {
+  if (loading || options.lenth === 0) {
     let alertVariant, alertText;
 
     if (loading) {
@@ -34,11 +32,49 @@ export function ExamTypeSelection({
       </Form.Group>
     )
   } else {
-    const options  = examTypes.map(examType => ({ id: examType.id, label: examType.description }))
-    const onChange = (examTypeId) => { loadTimeSlots(examTypeId); setExamType(examTypeId); }
+    return (
+      <RadioGroup
+        id={id}
+        label={label}
+        value={value}
+        setter={setValue}
+        disabledIds={disabledValues}
+        options={options.map(examType => ({ id: examType.id, label: examType.description }))}
+      />
+    )
+  }
+}
+
+export function ExamTimeSelection({ options, value, setValue, loading }) {
+  const id    = 'examination-date'
+  const label = 'Čas vyšetření'
+
+  if (loading || options.length === 0) {
+    let alertVariant, alertText;
+
+    if (loading) {
+      alertVariant = 'info';
+      alertText    = 'Načítám časové sloty';
+    } else {
+      alertVariant = 'danger';
+      alertText    = 'Pro zvolený druh vyšetření nebyly nalezeny žádné časové sloty.';
+    }
 
     return (
-      <RadioGroup id={id} label={label} value={examTypeId} setter={onChange} options={options} />
+      <Form.Group controlId={id}>
+        <Form.Label>{label}</Form.Label>
+        <Alert variant={alertVariant}>{alertText}</Alert>
+      </Form.Group>
+    )
+  } else {
+    return (
+      <RadioGroup
+        id={id}
+        label={label}
+        value={value}
+        setter={setValue}
+        options={options.map(slot => ({ id: slot.id, label: slot.time_range }))}
+      />
     )
   }
 }
@@ -60,54 +96,22 @@ export function ExamDateSelection({ value, setValue, minDate, maxDate, disabledD
   )
 }
 
-export function ExamTimeSelection({ options, value, setValue, loading }) {
-  if (loading || options.length === 0) {
-    let alertVariant, alertText;
-
-    if (loading) {
-      alertVariant = 'info';
-      alertText    = 'Načítám časové sloty';
-    } else {
-      alertVariant = 'danger';
-      alertText    = 'Pro zvolený druh vyšetření nebyly nalezeny žádné časové sloty.';
-    }
-
-    return (
-      <Form.Group controlId="examination-date">
-        <Form.Label>Čas vyšetření</Form.Label>
-        <Alert variant={alertVariant}>{alertText}</Alert>
-      </Form.Group>
-    )
-  } else {
-    return (
-      <RadioGroup
-        id='time-slot'
-        label='Čas vyšetření'
-        value={value}
-        setter={setValue}
-        options={options.map(slot => ({ id: slot.id, label: slot.time_range }))}
-      />
-    )
-  }
-}
-
-export function RequestorTypeSelection({ value, setValue, disabledValues }) {
+export function RequestorTypeSelection({ value, setValue }) {
   return (
     <RadioGroup
       id='requestor-type'
       label='Kdo vyšetření požaduje?'
       value={value}
       setter={setValue}
-      disabledIds={disabledValues}
       options={[
-        { id: REQUESTOR_TYPE_AG,
-          label: 'Učitel (jsem pedagogickým pracovníkem)' },
         { id: REQUESTOR_TYPE_PL,
           label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
         { id: REQUESTOR_TYPE_KHS,
           label: 'KHS (k vyšetření jsem indikován hygienikem)' },
         { id: REQUESTOR_TYPE_SAMOPL,
-          label: 'SAMOPLÁTCE (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+          label: 'Samoplátce (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+        { id: REQUESTOR_TYPE_AG,
+          label: 'Učitel (jsem pedagogickým pracovníkem)' },
       ]}
     />
   )

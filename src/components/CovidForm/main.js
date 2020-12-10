@@ -13,8 +13,8 @@ import {
   ZipCodeInput, EmailInput, PhoneInput, InsuranceNumberInput
 } from './input_components';
 import {
-  REQUESTOR_TYPES, REQUESTOR_TYPE_AG, REQUESTOR_TYPE_SAMOPL,
-  EXAM_TYPE_AG, EXAM_TYPE_PCR,
+  REQUESTOR_TYPE_AG, REQUESTOR_TYPE_PL, REQUESTOR_TYPE_SAMOPL,
+  EXAM_TYPES, EXAM_TYPE_AG, EXAM_TYPE_PCR,
   INSURANCE_COMPANY_KHS
 } from './constants';
 
@@ -30,42 +30,47 @@ function isValidInsuranceNumber(input) {
 }
 
 export default function CovidForm() {
-  const [haveRequestForm,          setHaveRequestForm]          = useState(false);
-  const [examDate,                 setExamDate]                 = useState(add(new Date(), { days: 1 }));
-  const [requestorType,            setRequestorType]            = useState(null);
-  const [examTypeId,               setExamTypeId]               = useState(null);
-  const [timeSlotId,               setTimeSlotId]               = useState(null);
-  const [firstName,                setFirstName]                = useState('');
-  const [lastName,                 setLastName]                 = useState('');
-  const [municipality,             setMunicipality]             = useState('');
-  const [zipCode,                  setZipCode]                  = useState('');
-  const [email,                    setEmail]                    = useState('');
-  const [phoneNumber,              setPhoneNumber]              = useState('');
-  const [insuranceNumber,          setInsuranceNumber]          = useState('');
-  const [insuranceCompany,         setInsuranceCompany]         = useState(111);
-  const [responseData,             setResponseData]             = useState(null);
-  const [examTypes,                setExamTypes]                = useState([]);
-  const [timeSlots,                setTimeSlots]                = useState([]);
-  const [fullDates,                setFullDates]                = useState([]);
-  const [disabledRequestorTypeIds, setDisabledRequestorTypeIds] = useState([]);
-  const [loadingExamTypes,         setLoadingExamTypes]         = useState(true);
-  const [loadingTimeSlots,         setLoadingTimeSlots]         = useState(true);
-  // const [loadingFullDates,         setLoadingFullDates]         = useState(true);
+  const [haveRequestForm,     setHaveRequestForm]     = useState(false);
+  const [examDate,            setExamDate]            = useState(add(new Date(), { days: 1 }));
+  const [requestorTypeId,     setRequestorTypeId]     = useState(null);
+  const [examTypeId,          setExamTypeId]          = useState(null);
+  const [timeSlotId,          setTimeSlotId]          = useState(null);
+  const [firstName,           setFirstName]           = useState('');
+  const [lastName,            setLastName]            = useState('');
+  const [municipality,        setMunicipality]        = useState('');
+  const [zipCode,             setZipCode]             = useState('');
+  const [email,               setEmail]               = useState('');
+  const [phoneNumber,         setPhoneNumber]         = useState('');
+  const [insuranceNumber,     setInsuranceNumber]     = useState('');
+  const [insuranceCompany,    setInsuranceCompany]    = useState(111);
+  const [responseData,        setResponseData]        = useState(null);
+  const [examTypes,           setExamTypes]           = useState([]);
+  const [timeSlots,           setTimeSlots]           = useState([]);
+  const [fullDates,           setFullDates]           = useState([]);
+  const [disabledExamTypeIds, setDisabledExamTypeIds] = useState([]);
+  const [loadingExamTypes,    setLoadingExamTypes]    = useState(true);
+  const [loadingTimeSlots,    setLoadingTimeSlots]    = useState(true);
 
   const minDate = new Date();
   const maxDate = add(new Date(), { months: 2 });
 
-  function setExamType(examTypeId) {
-    const NON_AG_REQUESTOR_TYPES = _.difference(REQUESTOR_TYPES, [REQUESTOR_TYPE_AG])
+  function setExamType(newExamTypeId) {
+    if (newExamTypeId !== examTypeId) loadTimeSlots(newExamTypeId);
 
-    setExamTypeId(examTypeId);
+    setExamTypeId(newExamTypeId);
+  }
 
-    if (examTypeId === EXAM_TYPE_AG) {
-      setRequestorType(REQUESTOR_TYPE_AG);
-      setDisabledRequestorTypeIds(NON_AG_REQUESTOR_TYPES);
+  function setRequestorType(requestorTypeId) {
+    const NON_AG_EXAM_TYPES = _.difference(EXAM_TYPES, [EXAM_TYPE_AG]);
+
+    setRequestorTypeId(requestorTypeId);
+
+    if (requestorTypeId === REQUESTOR_TYPE_AG) {
+      setExamType(EXAM_TYPE_AG);
+      setDisabledExamTypeIds(NON_AG_EXAM_TYPES);
     } else {
-      setRequestorType(NON_AG_REQUESTOR_TYPES[0]);
-      setDisabledRequestorTypeIds([REQUESTOR_TYPE_AG]);
+      setExamType(NON_AG_EXAM_TYPES[0]);
+      setDisabledExamTypeIds([REQUESTOR_TYPE_AG]);
     }
   }
 
@@ -119,7 +124,6 @@ export default function CovidForm() {
 
     // TODO: handle failure
     setFullDates(data.dates.map((date) => parseISO(date)));
-    // setLoadingFullDates(false);
   }
 
   useEffect(() => {
@@ -128,6 +132,7 @@ export default function CovidForm() {
       loadFullDates();
     }
 
+    setRequestorType(REQUESTOR_TYPE_PL);
     loadData();
   // eslint-disable-next-line
   }, [])
@@ -139,7 +144,7 @@ export default function CovidForm() {
         email, phoneNumber, insuranceNumber, insuranceCompany,
       }),
       exam: keysToSnakeCase({
-        requestorType, examType: examTypeId, examDate, timeSlotId
+        requestorType: requestorTypeId, examType: examTypeId, examDate, timeSlotId
       })
     };
 
@@ -167,7 +172,7 @@ export default function CovidForm() {
     || isValidInsuranceNumber(insuranceNumber);
   const canSubmit = firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
-    && (requestorType === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG || haveRequestForm);
+    && (requestorTypeId === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG || haveRequestForm);
 
   const hasRegistered = responseData?.status === 'OK';
   const disableSubmit = !canSubmit || hasRegistered;
@@ -199,16 +204,14 @@ export default function CovidForm() {
 
   return (
     <Form noValidate id="covid-form">
+      <RequestorTypeSelection value={requestorTypeId} setValue={setRequestorType} />
+
       <ExamTypeSelection
-        examTypes={examTypes} examTypeId={examTypeId} setExamType={setExamType}
-        loading={loadingExamTypes} loadTimeSlots={loadTimeSlots}
+        options={examTypes} value={examTypeId} loading={loadingExamTypes}
+        setValue={setExamType} disabledValues={disabledExamTypeIds}
       />
 
-      <RequestorTypeSelection
-        value={requestorType} setValue={setRequestorType}
-        disabledValues={disabledRequestorTypeIds} />
-
-      {requestorType === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG ||
+      {requestorTypeId === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG ||
         <RequestFormCheckbox checked={haveRequestForm} setChecked={setHaveRequestForm} />}
 
       <ExamDateSelection
