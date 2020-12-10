@@ -1,7 +1,7 @@
 import { isWeekend   } from 'date-fns';
 import { Alert, Form } from 'react-bootstrap';
 
-import { RadioGroup, ResponsiveDatePicker } from '../../utils/components';
+import { RadioGroup, ResponsiveDatePicker } from 'src/utils/components';
 
 import {
   REQUESTOR_TYPE_AG, REQUESTOR_TYPE_PL, REQUESTOR_TYPE_KHS, REQUESTOR_TYPE_SAMOPL,

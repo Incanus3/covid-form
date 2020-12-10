@@ -4,8 +4,8 @@ import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
 // TODO: configure app alias in webpack
-import { jsonRequest                      } from '../../backend';
-import { formatDate, keysToSnakeCase      } from '../../utils/generic';
+import { jsonRequest                      } from 'src/backend';
+import { formatDate, keysToSnakeCase      } from 'src/utils/generic';
 
 import {
   ExamTypeSelection, ExamDateSelection, ExamTimeSelection, InsuranceCompanySelection,
