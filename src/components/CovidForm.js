@@ -123,10 +123,10 @@ export default function CovidForm() {
   const [examTypes,                setExamTypes]                = useState([]);
   const [timeSlots,                setTimeSlots]                = useState([]);
   const [disabledRequestorTypeIds, setDisabledRequestorTypeIds] = useState([]);
-  const [fullDates,                setFullDates]                = useState(null);
+  const [fullDates,                setFullDates]                = useState([]);
   const [loadingExamTypes,         setLoadingExamTypes]         = useState(true);
   const [loadingTimeSlots,         setLoadingTimeSlots]         = useState(true);
-  // const [loadingFullDates, setLoadingFullDates] = useState(true);
+  const [loadingFullDates,         setLoadingFullDates]         = useState(true);
 
   const minDate = new Date();
   const maxDate = add(new Date(), { months: 2 });
@@ -186,29 +186,24 @@ export default function CovidForm() {
     return firstId;
   }
 
+  async function loadFullDates() {
+    const { body: data } = await jsonRequest('GET', '/capacity/full_dates', {
+      params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
+    });
+    // TODO: handle failure
+    setFullDates(data.dates.map((date) => parseISO(date)));
+    setLoadingFullDates(false);
+  }
+
   useEffect(() => {
     async function loadData() {
       loadTimeSlots(await loadExamTypes());
+      loadFullDates();
     }
 
     loadData();
   // eslint-disable-next-line
   }, [])
-
-  // useEffect(() => {
-  //   async function loadFullDates() {
-  //     const { body: data } = await jsonRequest('GET', '/capacity/full_dates', {
-  //       params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
-  //     });
-  //     // TODO: handle failure
-  //     setFullDates(data.dates.map((date) => parseISO(date)));
-  //     // console.log('HERE')
-  //     // console.log(data)
-  //     setLoadingFullDates(false);
-  //   }
-  //   loadFullDates();
-  // // eslint-disable-next-line
-  // }, [])
 
   const submit = async () => {
     const data = {
