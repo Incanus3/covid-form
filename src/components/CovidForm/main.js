@@ -14,7 +14,7 @@ import {
 } from './input_components';
 import {
   REQUESTOR_TYPE_AG, REQUESTOR_TYPE_PL, REQUESTOR_TYPE_SAMOPL,
-  EXAM_TYPES, EXAM_TYPE_AG, EXAM_TYPE_PCR,
+  EXAM_TYPES, EXAM_TYPE_AG, EXAM_TYPE_PCR, EXAM_TYPE_RAPID,
   INSURANCE_COMPANY_KHS
 } from './constants';
 
@@ -61,13 +61,17 @@ export default function CovidForm() {
   }
 
   function setRequestorType(requestorTypeId) {
-    const NON_AG_EXAM_TYPES = _.difference(EXAM_TYPES, [EXAM_TYPE_AG]);
+    const NON_AG_EXAM_TYPES    = _.difference(EXAM_TYPES, [EXAM_TYPE_AG]);
+    const NON_RAPID_EXAM_TYPES = _.difference(EXAM_TYPES, [EXAM_TYPE_RAPID]);
 
     setRequestorTypeId(requestorTypeId);
 
     if (requestorTypeId === REQUESTOR_TYPE_AG) {
       setExamType(EXAM_TYPE_AG);
       setDisabledExamTypeIds(NON_AG_EXAM_TYPES);
+    } else if (requestorTypeId === REQUESTOR_TYPE_SAMOPL) {
+      setExamType(EXAM_TYPE_RAPID);
+      setDisabledExamTypeIds(NON_RAPID_EXAM_TYPES);
     } else {
       setExamType(NON_AG_EXAM_TYPES[0]);
       setDisabledExamTypeIds([REQUESTOR_TYPE_AG]);

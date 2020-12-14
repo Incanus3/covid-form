@@ -111,7 +111,7 @@ export function RequestorTypeSelection({ value, setValue }) {
         { id: REQUESTOR_TYPE_SAMOPL,
           label: 'Samoplátce (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
         { id: REQUESTOR_TYPE_AG,
-          label: 'Učitel (jsem pedagogickým pracovníkem)' },
+          label: 'Veřejnost (dobrovolné bezplatné testování)' },
       ]}
     />
   )
