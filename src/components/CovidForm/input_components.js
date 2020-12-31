@@ -195,10 +195,10 @@ export function LastNameInput({ value, setValue, as }) {
 export function MunicipalityInput({ value, setValue, as }) {
   return (
     <Form.Group as={as} controlId="municipality">
-      <Form.Label>Město/obec, kde aktuálně pobýváte</Form.Label>
+      <Form.Label>Město/obec, kde aktuálně pobýváte (nikoli ulice či č.p.)</Form.Label>
       <Form.Control required
         type="text"
-        placeholder="Vaše současné místo pobytu (město/obec)"
+        placeholder="Vaše současné místo pobytu (město/obec, ne ulice)"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         isInvalid={!value}
