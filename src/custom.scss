@@ -1,7 +1,4 @@
 body {
-  margin-top:    46px; // TODO: use bootstrap container margin variable here
-  margin-bottom: 46px; // TODO: use bootstrap container margin variable here
-
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -14,6 +11,10 @@ code {
     monospace;
 }
 
+.navbar {
+  margin-bottom: 26px; // TODO: use bootstrap navbar height variable here
+}
+
 .row {
   margin-bottom: 24px;
 }
@@ -22,7 +23,7 @@ form {
   margin-left: 24px;
 }
 
-.modal-body form {
+.card-body form, .modal-body form {
   margin-left: 0;
 
   .row:last-child {
@@ -49,4 +50,8 @@ form {
 
 .react-datepicker__input-container .form-control[readonly] {
   background-color: #fff;
+}
+
+#csv-export-card {
+  max-width: 500px;
 }

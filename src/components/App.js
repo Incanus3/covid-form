@@ -1,27 +1,50 @@
-import { Container, Row, Col  } from 'react-bootstrap';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
-import Export    from './Export'
-import CovidCard from './CovidCard'
-import CovidForm from './CovidForm'
+import { Auth, AuthContext } from 'src/auth'
 
-function App() {
-  return (
-    <Container>
-      <Export />
+import Navbar         from './Navbar'
+import Registration   from './Registration'
+import Login          from './admin/Login'
+import Administration from './admin/Administration'
 
-      <Row>
-        <Col>
-          <CovidCard />
-        </Col>
-      </Row>
+const auth = new Auth()
 
-      <Row>
-        <Col>
-          <CovidForm />
-        </Col>
-      </Row>
-    </Container>
-  );
+function LoggedInRoute({ path, exact = false, children }) {
+  if (auth.isLoggedIn) {
+    return <Route path={path} exact={exact}>{children}</Route>
+  } else {
+    return <Redirect to="/admin/login" />
+  }
 }
 
-export default App;
+function LoggedOutRoute({ path, exact = false, children, redirectTo }) {
+  if (auth.isLoggedIn) {
+    return <Redirect to={redirectTo} />
+  } else {
+    return <Route path={path} exact={exact}>{children}</Route>
+  }
+}
+
+export default function App() {
+  return (
+    <AuthContext.Provider value={auth}>
+      <Router>
+        <Navbar />
+
+        <Switch>
+          <Route path="/admin">
+            <Switch>
+              <LoggedOutRoute path="/admin/login" redirectTo="/admin/export"><Login /></LoggedOutRoute>
+              <LoggedInRoute path="/admin/export"><Administration /></LoggedInRoute>
+              <Redirect to="/admin/login" />
+            </Switch>
+          </Route>
+
+          <Route path="/" exact={true}>
+            <Registration />
+          </Route>
+        </Switch>
+      </Router>
+    </AuthContext.Provider>
+  );
+}
