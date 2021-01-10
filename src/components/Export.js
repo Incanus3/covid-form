@@ -3,9 +3,9 @@ import { capitalize                           } from 'lodash';
 import { useState                             } from 'react';
 import { Row, Col, Button, Alert, Form, Modal } from 'react-bootstrap';
 
-import { request                      } from 'src/backend';
-import { Success, Failure, formatDate } from 'src/utils/generic';
-import { DatePicker                   } from 'src/utils/components';
+import { request            } from 'src/backend';
+import { Result, formatDate } from 'src/utils/generic';
+import { DatePicker         } from 'src/utils/components';
 
 async function saveExport(password, startDate, endDate) {
   if (typeof(password) === 'string') {
@@ -17,18 +17,16 @@ async function saveExport(password, startDate, endDate) {
       headers, params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
     })
 
-    if (response.status === 200) {
-      saveAs(await response.blob(), 'export.csv');
-
-      return new Success();
-    } else {
-      return new Failure((await response.json()).error);
+    if (response.ok) {
+      saveAs(await response.clone().blob(), 'export.csv');
     }
+
+    return await Result.fromResponse(response);
   }
 }
 
 function ExportModal(props) {
-  const { show, hide, startDate, setStartDate, endDate, setEndDate, setExportStatus } = props;
+  const { show, hide, startDate, setStartDate, endDate, setEndDate, setExportResult } = props;
 
   const [password, setPassword] = useState('');
 
@@ -47,9 +45,7 @@ function ExportModal(props) {
   }
 
   const submit = async (password) => {
-    const result = await saveExport(password, startDate, endDate);
-
-    setExportStatus(result);
+    setExportResult(await saveExport(password, startDate, endDate));
   }
 
   return (
@@ -119,7 +115,7 @@ export default function Export() {
   const [showModal,    setShowModal   ] = useState(false);
   const [startDate,    setStartDate   ] = useState(new Date());
   const [endDate,      setEndDate     ] = useState(new Date());
-  const [exportStatus, setExportStatus] = useState(null);
+  const [exportResult, setExportResult] = useState(null);
 
   return (
     <Row>
@@ -127,8 +123,8 @@ export default function Export() {
         <Button variant="primary" size="lg" onClick={() => setShowModal(true)}>Exportovat do CSV</Button>
       </Col>
 
-      {exportStatus && exportStatus.isFailure &&
-        <Col><Alert variant='danger'>{capitalize(exportStatus.error)}</Alert></Col>
+      {exportResult?.isFailure &&
+        <Col><Alert variant='danger'>{capitalize(exportResult.data.error)}</Alert></Col>
       }
 
       <ExportModal
@@ -138,7 +134,7 @@ export default function Export() {
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
-        setExportStatus={setExportStatus}
+        setExportResult={setExportResult}
       />
     </Row>
   );

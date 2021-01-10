@@ -13,7 +13,7 @@ export default function Login() {
   const [attemptFailed, setAttemptFailed] = useState(false);
 
   const submit = async () => {
-    if (await auth.logIn(email, password)) {
+    if ((await auth.logIn(email, password)).ok) {
       setIsLoggedIn(true);
     } else {
       setAttemptFailed(true);

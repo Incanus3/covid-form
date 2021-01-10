@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { jsonRequest } from 'src/backend';
+import { request } from 'src/backend';
 
 class JSONStorage {
   constructor(storage) { this.storage = storage }
@@ -16,44 +16,87 @@ export class Auth {
   constructor() {
     this.storage = new JSONStorage(localStorage || {});
 
-    this.load();
-  }
-
-  load() {
-    const authInfo = this.storage.read() || {};
-
-    this.accessToken  = authInfo.accessToken  || null;
-    this.refreshToken = authInfo.refreshToken || null;
-  }
-
-  save() {
-    const authInfo = { accessToken: this.accessToken, refreshToken: this.refreshToken };
-
-    this.storage.write(authInfo);
+    this._load();
   }
 
   get isLoggedIn() { return !!this.accessToken; }
 
-  async logIn(login, password) {
-    const { response, body } = await jsonRequest(
-      'post', '/auth/login', { data: { login , password } }
-    );
+  async logIn(email, password) {
+    return await this._handleTokenResult(await request(
+      'post', '/auth/login', { data: { email , password } }
+    ));
+  }
 
-    if (response.ok) {
-      this.accessToken  = body.access_token;
-      this.refreshToken = body.refresh_token;
-
-      this.save();
-    }
-
-    return response.ok;
+  async refresh() {
+    return await this._handleTokenResult(await this._authenticatedRequest(
+      'post', '/auth/refresh_token', { data: { refresh_token: this.refreshToken } }
+    ));
   }
 
   logOut() {
     this.accessToken  = null;
     this.refreshToken = null;
 
-    this.save();
+    this._save();
+  }
+
+  async authenticatedRequest(...args) {
+    return this._withRefresh(() => this._authenticatedRequest(...args));
+  }
+
+  _load() {
+    const authInfo = this.storage.read() || {};
+
+    this.accessToken  = authInfo.accessToken  || null;
+    this.refreshToken = authInfo.refreshToken || null;
+  }
+
+  _save() {
+    const authInfo = { accessToken: this.accessToken, refreshToken: this.refreshToken };
+
+    this.storage.write(authInfo);
+  }
+
+  _authenticatedRequest(method, path, options = {}) {
+    options['headers'] = options['headers'] || {};
+    options['headers']['Authorization'] = this.accessToken;
+
+    return request(method, path, options);
+  }
+
+  async _withRefresh(requestingFunction) {
+    const response = await requestingFunction();
+
+    if (response.ok || !await this._isExpiredTokenResponse(response)) {
+      return response;
+    }
+
+    const refreshResponse = await this.refresh();
+
+    if (!refreshResponse.ok) {
+      return refreshResponse;
+    }
+
+    return await requestingFunction();
+  }
+
+  async _handleTokenResult(response) {
+    if (response.ok) {
+      const body = await response.clone().json();
+
+      this.accessToken  = body.access_token;
+      this.refreshToken = body.refresh_token;
+
+      this._save();
+    }
+
+    return response;
+  }
+
+  async _isExpiredTokenResponse(response) {
+    const body = await response.clone().json();
+
+    return response.status === 401 && body.error === "expired JWT access token";
   }
 }
 

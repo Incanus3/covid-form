@@ -4,8 +4,8 @@ import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
 // TODO: configure app alias in webpack
-import { jsonRequest                      } from 'src/backend';
-import { formatDate, keysToSnakeCase      } from 'src/utils/generic';
+import { request                             } from 'src/backend';
+import { Result, formatDate, keysToSnakeCase } from 'src/utils/generic';
 
 import {
   ExamTypeSelection, ExamDateSelection, ExamTimeSelection, InsuranceCompanySelection,
@@ -81,13 +81,14 @@ export default function CovidForm() {
   async function loadExamTypes() {
     setLoadingExamTypes(true);
 
-    const { body: data } = await jsonRequest('GET', '/crud/exam_types');
+    const result = await Result.fromResponse(await request('GET', '/crud/exam_types'));
+
     let examTypeId;
 
-    if (data.exam_types.length === 0) {
+    if (result.data.exam_types.length === 0) {
       examTypeId = null;
     } else {
-      const examTypeIds = _.map(data.exam_types, 'id')
+      const examTypeIds = _.map(result.data.exam_types, 'id')
 
       if (examTypeIds.includes(EXAM_TYPE_PCR)) {
         examTypeId = EXAM_TYPE_PCR;
@@ -97,7 +98,7 @@ export default function CovidForm() {
     }
 
     // TODO: handle failure
-    setExamTypes(data.exam_types);
+    setExamTypes(result.data.exam_types);
     setExamType(examTypeId);
     setLoadingExamTypes(false);
 
@@ -107,14 +108,14 @@ export default function CovidForm() {
   async function loadTimeSlots(examTypeId) {
     setLoadingTimeSlots(true);
 
-    const { body: data } = await jsonRequest('GET', '/capacity/available_time_slots', {
+    const result = await Result.fromResponse(await request('GET', '/capacity/available_time_slots', {
       params: { exam_type: examTypeId }
-    });
+    }));
 
-    const firstId = data.time_slots[0]?.id || null
+    const firstId = result.data.time_slots[0]?.id || null
 
     // TODO: handle failure
-    setTimeSlots(data.time_slots);
+    setTimeSlots(result.data.time_slots);
     setTimeSlotId(firstId);
     setLoadingTimeSlots(false);
 
@@ -122,12 +123,12 @@ export default function CovidForm() {
   }
 
   async function loadFullDates() {
-    const { body: data } = await jsonRequest('GET', '/capacity/full_dates', {
+    const result = await Result.fromResponse(await request('GET', '/capacity/full_dates', {
       params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
-    });
+    }));
 
     // TODO: handle failure
-    setFullDates(data.dates.map((date) => parseISO(date)));
+    setFullDates(result.data.dates.map((date) => parseISO(date)));
   }
 
   useEffect(() => {
@@ -152,11 +153,9 @@ export default function CovidForm() {
       })
     };
 
-    console.log('submitting', data);
+    const result = await Result.fromResponse(await request('post', '/register', { data }));
 
-    const { body } = await jsonRequest('post', '/register', { data });
-    console.log(body);
-    setResponseData(body);
+    setResponseData(result.data);
   }
 
   const reset = () => {

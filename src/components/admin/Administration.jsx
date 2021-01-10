@@ -4,38 +4,28 @@ import { useState, useContext                           } from 'react';
 import { Container, Row, Col, Alert, Card, Form, Button } from 'react-bootstrap';
 import { saveAs                                         } from 'file-saver';
 
-import { AuthContext                  } from 'src/auth'
-import { request                      } from 'src/backend';
-import { Success, Failure, formatDate } from 'src/utils/generic';
-import { DatePicker                   } from 'src/utils/components';
+import { AuthContext        } from 'src/auth'
+import { Result, formatDate } from 'src/utils/generic';
+import { DatePicker         } from 'src/utils/components';
 
 async function saveExport(auth, startDate, endDate) {
-  const headers = {
-    'Authorization': auth.accessToken,
-  }
-
-  const response = await request('GET', '/admin/export', {
-    headers, params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
+  const response = await auth.authenticatedRequest('GET', '/admin/export', {
+    params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
   })
 
-  if (response.status === 200) {
-    saveAs(await response.blob(), 'export.csv');
-
-    return new Success();
-  } else {
-    return new Failure((await response.json()).error);
+  if (response.ok) {
+    saveAs(await response.clone().blob(), 'export.csv');
   }
+
+  return Result.fromResponse(response);
 }
 
 export default function Administration() {
   const auth = useContext(AuthContext)
 
-  // TODO: check that we're logged in and redirect to login otherwise
-  // - maybe this could be done generically in router
-
   const [startDate,    setStartDate   ] = useState(new Date());
   const [endDate,      setEndDate     ] = useState(new Date());
-  const [exportStatus, setExportStatus] = useState(null);
+  const [exportResult, setExportResult] = useState(null);
 
   const startDateChanged = (date) => {
     setStartDate(date);
@@ -46,9 +36,7 @@ export default function Administration() {
   }
 
   const submit = async () => {
-    const result = await saveExport(auth, startDate, endDate);
-
-    setExportStatus(result);
+    setExportResult(await saveExport(auth, startDate, endDate));
   }
 
   const ExportFromInput = ({ value, onClick }) =>
@@ -92,13 +80,13 @@ export default function Administration() {
 
             <Row>
               <Col xs="auto">
-                <Button variant="primary" onClick={submit}>
+                <Button variant="primary" size="lg" onClick={submit}>
                   Exportovat
                 </Button>
               </Col>
 
-              {exportStatus?.isFailure &&
-                <Col><Alert variant='danger'>{_.capitalize(exportStatus.error)}</Alert></Col>}
+              {exportResult?.isFailure &&
+                <Col><Alert variant='danger'>{_.capitalize(exportResult.data.error)}</Alert></Col>}
             </Row>
           </Form>
         </Card.Body>
