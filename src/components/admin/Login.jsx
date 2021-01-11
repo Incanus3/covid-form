@@ -7,7 +7,7 @@ import { AuthContext } from 'src/auth'
 
 function alertFor(location) {
   if (location.state?.message) {
-    return <Alert variant={location.state.severity}>{location.state.message}</Alert>
+    return <Alert id='login-alert' variant={location.state.severity}>{location.state.message}</Alert>
   }
 }
 
@@ -33,7 +33,7 @@ function Login({ location }) {
     return (
       <Container>
         <Form noValidate id="covid-form">
-          {attemptFailed && <Alert variant='danger'>Přihlášení selhalo</Alert>
+          {attemptFailed && <Alert id='login-alert' variant='danger'>Přihlášení selhalo</Alert>
               || alertFor(location)}
 
           <Form.Group controlId="email">
@@ -61,7 +61,7 @@ function Login({ location }) {
             />
           </Form.Group>
 
-          <Button variant='primary' size="lg" onClick={submit}>Přihlásit se</Button>
+          <Button id='login-submit' variant='primary' size="lg" onClick={submit}>Přihlásit se</Button>
         </Form>
       </Container>
     );

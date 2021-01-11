@@ -31,26 +31,26 @@ function CovidNavbar({ location, history }) {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
             <LinkContainer to="/" exact={true}>
-              <Nav.Link>Registrace</Nav.Link>
+              <Nav.Link id="registration-link">Registrace</Nav.Link>
             </LinkContainer>
             <LinkContainer to="/admin">
-              <Nav.Link active={isAdminPage}>Administrace</Nav.Link>
+              <Nav.Link id="administration-link" active={isAdminPage}>Administrace</Nav.Link>
             </LinkContainer>
             {isAdminPage &&
               <>
                 <Navbar.Text><BsChevronCompactRight /></Navbar.Text>
-                <NavLink label='CSV export' to='/admin/export'/>
+                <NavLink id="export-link" label='CSV export' to='/admin/export'/>
               </>}
           </Nav>
 
           {isAdminPage &&
             <Nav>
               {auth.isLoggedIn ?
-                <Nav.Link onClick={() => auth.logOut(history)}>
+                <Nav.Link id="logout-link" onClick={() => auth.logOut(history)}>
                   Odhlásit se
                 </Nav.Link> :
                 <LinkContainer to={'/admin/login'}>
-                  <Nav.Link>Přihlásit se</Nav.Link>
+                  <Nav.Link id="login-link">Přihlásit se</Nav.Link>
                 </LinkContainer>}
             </Nav>}
         </Navbar.Collapse>

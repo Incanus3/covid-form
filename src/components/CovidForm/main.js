@@ -187,7 +187,7 @@ export default function CovidForm() {
 
   switch(responseData?.status) {
     case 'OK':
-      responseAlert = <Alert variant='success'>Vaše registrace byla úspěšná</Alert>;
+      responseAlert = <Alert id='covid-form-alert' variant='success'>Vaše registrace byla úspěšná</Alert>;
       break;
     case 'ERROR':
       if (responseData.error) {
@@ -200,7 +200,7 @@ export default function CovidForm() {
         insuranceNumberErrors = _.join(_.uniq(responseData.client.insurance_number), ', ');
       }
 
-      responseAlert = <Alert variant='danger'>{commonErrors}</Alert>;
+      responseAlert = <Alert id='covid-form-alert' variant='danger'>{commonErrors}</Alert>;
       break;
     default:
       responseAlert = null;
@@ -252,6 +252,7 @@ export default function CovidForm() {
       <Row>
         <Col xs="auto">
           <Button
+            id='covid-form-submit'
             variant={disableSubmit ? 'secondary' : 'primary'}
             size="lg" onClick={submit} disabled={disableSubmit}
           >
@@ -265,7 +266,7 @@ export default function CovidForm() {
       </Row>
 
       {hasRegistered &&
-        <Button variant='primary' size="lg" onClick={reset}>Nové zadání</Button>}
+        <Button id='covid-form-reset-button' variant='primary' size="lg" onClick={reset}>Nové zadání</Button>}
     </Form>
   )
 }

@@ -57,7 +57,7 @@ function Administration({ history }) {
         <Card.Header>Export do CSV</Card.Header>
 
         <Card.Body>
-          <Form noValidate id='export-csv-form'>
+          <Form noValidate id='csv-export-form'>
             <Form.Group id='export-from' as={Row}>
               <Form.Label column sm={6}>Zahrnout od data (včetně)</Form.Label>
               <Col sm={6}>
@@ -86,7 +86,7 @@ function Administration({ history }) {
 
             <Row>
               <Col xs="auto">
-                <Button variant="primary" size="lg" onClick={submit}>
+                <Button id="csv-export-button" variant="primary" size="lg" onClick={submit}>
                   Exportovat
                 </Button>
               </Col>
