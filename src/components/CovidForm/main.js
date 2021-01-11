@@ -4,8 +4,9 @@ import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
 // TODO: configure app alias in webpack
-import { request                             } from 'src/backend';
-import { Result, formatDate, keysToSnakeCase } from 'src/utils/generic';
+import { request                     } from 'src/backend';
+import { formatDate, keysToSnakeCase } from 'src/utils/generic';
+import { AsyncResult                 } from 'src/utils/results';
 
 import {
   ExamTypeSelection, ExamDateSelection, ExamTimeSelection, InsuranceCompanySelection,
@@ -81,7 +82,7 @@ export default function CovidForm() {
   async function loadExamTypes() {
     setLoadingExamTypes(true);
 
-    const result = await Result.fromResponse(await request('GET', '/crud/exam_types'));
+    const result = await AsyncResult.fromResponse(await request('GET', '/crud/exam_types'));
 
     let examTypeId;
 
@@ -108,7 +109,7 @@ export default function CovidForm() {
   async function loadTimeSlots(examTypeId) {
     setLoadingTimeSlots(true);
 
-    const result = await Result.fromResponse(await request('GET', '/capacity/available_time_slots', {
+    const result = await AsyncResult.fromResponse(await request('GET', '/capacity/available_time_slots', {
       params: { exam_type: examTypeId }
     }));
 
@@ -123,7 +124,7 @@ export default function CovidForm() {
   }
 
   async function loadFullDates() {
-    const result = await Result.fromResponse(await request('GET', '/capacity/full_dates', {
+    const result = await AsyncResult.fromResponse(await request('GET', '/capacity/full_dates', {
       params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
     }));
 
@@ -153,7 +154,7 @@ export default function CovidForm() {
       })
     };
 
-    const result = await Result.fromResponse(await request('post', '/register', { data }));
+    const result = await AsyncResult.fromResponse(await request('post', '/register', { data }));
 
     setResponseData(result.data);
   }

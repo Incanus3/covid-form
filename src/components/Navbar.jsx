@@ -46,7 +46,7 @@ function CovidNavbar({ location, history }) {
           {isAdminPage &&
             <Nav>
               {auth.isLoggedIn ?
-                <Nav.Link onClick={() => { auth.logOut(); history.push('/') }}>
+                <Nav.Link onClick={() => auth.logOut(history)}>
                   Odhlásit se
                 </Nav.Link> :
                 <LinkContainer to={'/admin/login'}>

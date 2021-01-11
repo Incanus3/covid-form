@@ -1,11 +1,12 @@
 import { saveAs                               } from 'file-saver';
 import { capitalize                           } from 'lodash';
-import { useState                             } from 'react';
+import React, { useState                      } from 'react';
 import { Row, Col, Button, Alert, Form, Modal } from 'react-bootstrap';
 
-import { request            } from 'src/backend';
-import { Result, formatDate } from 'src/utils/generic';
-import { DatePicker         } from 'src/utils/components';
+import { request     } from 'src/backend';
+import { formatDate  } from 'src/utils/generic';
+import { AsyncResult } from 'src/utils/results';
+import { DatePicker  } from 'src/utils/components';
 
 async function saveExport(password, startDate, endDate) {
   if (typeof(password) === 'string') {
@@ -21,7 +22,7 @@ async function saveExport(password, startDate, endDate) {
       saveAs(await response.clone().blob(), 'export.csv');
     }
 
-    return await Result.fromResponse(response);
+    return await AsyncResult.fromResponse(response);
   }
 }
 
@@ -30,11 +31,13 @@ function ExportModal(props) {
 
   const [password, setPassword] = useState('');
 
-  const ExportFromInput = ({ value, onClick }) =>
-    <Form.Control readOnly value={value} onClick={onClick} />
+  const ExportFromInput = React.forwardRef(({ value, onClick }, ref) =>
+    <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
+  )
 
-  const ExportToInput = ({ value, onClick }) =>
-    <Form.Control readOnly value={value} onClick={onClick} />
+  const ExportToInput = React.forwardRef(({ value, onClick }, ref) =>
+    <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
+  )
 
   const startDateChanged = (date) => {
     setStartDate(date);

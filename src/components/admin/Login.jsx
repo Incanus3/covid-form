@@ -1,10 +1,17 @@
 import { useState, useContext           } from 'react';
+import { withRouter                     } from 'react-router';
 import { Container, Alert, Form, Button } from 'react-bootstrap';
 import { Redirect                       } from 'react-router-dom';
 
 import { AuthContext } from 'src/auth'
 
-export default function Login() {
+function alertFor(location) {
+  if (location.state?.message) {
+    return <Alert variant={location.state.severity}>{location.state.message}</Alert>
+  }
+}
+
+function Login({ location }) {
   const auth = useContext(AuthContext)
 
   const [email,         setEmail]         = useState('');
@@ -26,7 +33,8 @@ export default function Login() {
     return (
       <Container>
         <Form noValidate id="covid-form">
-          {attemptFailed && <Alert variant='danger'>Přihlášení selhalo</Alert>}
+          {attemptFailed && <Alert variant='danger'>Přihlášení selhalo</Alert>
+              || alertFor(location)}
 
           <Form.Group controlId="email">
             <Form.Label>Email</Form.Label>
@@ -59,3 +67,5 @@ export default function Login() {
     );
   }
 }
+
+export default withRouter(Login);

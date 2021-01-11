@@ -1,26 +1,30 @@
 import * as _ from 'lodash';
 
-import { useState, useContext                           } from 'react';
+import React, { useState, useContext                    } from 'react';
+import { withRouter                                     } from 'react-router';
 import { Container, Row, Col, Alert, Card, Form, Button } from 'react-bootstrap';
 import { saveAs                                         } from 'file-saver';
 
-import { AuthContext        } from 'src/auth'
-import { Result, formatDate } from 'src/utils/generic';
-import { DatePicker         } from 'src/utils/components';
+import { AuthContext } from 'src/auth'
+import { formatDate  } from 'src/utils/generic';
+import { AsyncResult } from 'src/utils/results';
+import { DatePicker  } from 'src/utils/components';
 
-async function saveExport(auth, startDate, endDate) {
-  const response = await auth.authenticatedRequest('GET', '/admin/export', {
-    params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
+async function saveExport(auth, history, callback, startDate, endDate) {
+  (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history,
+    'GET', '/admin/export', {
+      params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
+    }
+  )).onSuccess(async (response) => {
+    if (response.ok) {
+      saveAs(await response.clone().blob(), 'export.csv');
+    }
+
+    callback(await AsyncResult.fromResponse(response));
   })
-
-  if (response.ok) {
-    saveAs(await response.clone().blob(), 'export.csv');
-  }
-
-  return Result.fromResponse(response);
 }
 
-export default function Administration() {
+function Administration({ history }) {
   const auth = useContext(AuthContext)
 
   const [startDate,    setStartDate   ] = useState(new Date());
@@ -36,14 +40,16 @@ export default function Administration() {
   }
 
   const submit = async () => {
-    setExportResult(await saveExport(auth, startDate, endDate));
+    await saveExport(auth, history, setExportResult, startDate, endDate);
   }
 
-  const ExportFromInput = ({ value, onClick }) =>
-    <Form.Control readOnly value={value} onClick={onClick} />
+  const ExportFromInput = React.forwardRef(({ value, onClick }, ref) =>
+    <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
+  )
 
-  const ExportToInput = ({ value, onClick }) =>
-    <Form.Control readOnly value={value} onClick={onClick} />
+  const ExportToInput = React.forwardRef(({ value, onClick }, ref) =>
+    <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
+  )
 
   return (
     <Container>
@@ -94,3 +100,5 @@ export default function Administration() {
     </Container>
   )
 }
+
+export default withRouter(Administration);

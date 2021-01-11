@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { request } from 'src/backend';
+import { request          } from 'src/backend';
+import { Success, Failure } from 'src/utils/results';
 
 class JSONStorage {
   constructor(storage) { this.storage = storage }
@@ -11,6 +12,12 @@ class JSONStorage {
   isFilled = () => !!this.storage.data
   isEmpty  = () => !this.isFilled()
 }
+
+export class AuthError extends Error {}
+
+export class SessionExpiredError extends AuthError {}
+
+export class SessionExpiredFailure extends Failure {}
 
 export class Auth {
   constructor() {
@@ -33,15 +40,49 @@ export class Auth {
     ));
   }
 
-  logOut() {
+  logOut(history, { redirectTo = '/admin/login', message = null } = {}) {
     this.accessToken  = null;
     this.refreshToken = null;
 
     this._save();
+
+    if (history) {
+      const location = { pathname: redirectTo };
+
+      if (message) { location.state = message };
+
+      history.push(location);
+    }
   }
 
   async authenticatedRequest(...args) {
     return this._withRefresh(() => this._authenticatedRequest(...args));
+  }
+
+  async authenticatedRequestWithLogoutWhenSessionExpired(history, ...args) {
+    try {
+      return new Success(await this.authenticatedRequest(...args));
+    } catch (error) {
+      if (error instanceof SessionExpiredError) {
+        this.logOut(history, { message: SESSION_EXPIRED });
+
+        return new SessionExpiredFailure();
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async isExpiredAccessTokenResponse(response) {
+    const body = await response.clone().json();
+
+    return response.status === 401 && body.error === "expired JWT access token";
+  }
+
+  async isInvalidRefreshTokenResponse(response) {
+    const body = await response.clone().json();
+
+    return response.status === 401 && body.error === "invalid JWT refresh token";
   }
 
   _load() {
@@ -58,8 +99,8 @@ export class Auth {
   }
 
   _authenticatedRequest(method, path, options = {}) {
-    options['headers'] = options['headers'] || {};
-    options['headers']['Authorization'] = this.accessToken;
+    options.headers = options.headers || {};
+    options.headers.Authorization = this.accessToken;
 
     return request(method, path, options);
   }
@@ -67,14 +108,14 @@ export class Auth {
   async _withRefresh(requestingFunction) {
     const response = await requestingFunction();
 
-    if (response.ok || !await this._isExpiredTokenResponse(response)) {
+    if (response.ok || !await this.isExpiredAccessTokenResponse(response)) {
       return response;
     }
 
     const refreshResponse = await this.refresh();
 
     if (!refreshResponse.ok) {
-      return refreshResponse;
+      throw new SessionExpiredError();
     }
 
     return await requestingFunction();
@@ -92,12 +133,17 @@ export class Auth {
 
     return response;
   }
-
-  async _isExpiredTokenResponse(response) {
-    const body = await response.clone().json();
-
-    return response.status === 401 && body.error === "expired JWT access token";
-  }
 }
 
 export const AuthContext = React.createContext();
+
+class AuthMessage {
+  constructor(message, severity) {
+    this.message  = message;
+    this.severity = severity;
+  }
+}
+
+export const SESSION_EXPIRED = new AuthMessage(
+  'Platnost Vašeho přihlášení vypršela, přihlaste se prosím znovu.', 'warning'
+)

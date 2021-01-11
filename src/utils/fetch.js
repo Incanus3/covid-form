@@ -17,7 +17,7 @@ export async function request(method, path, { params = null, data = null, header
   if (data) {
     console.log('data:', data);
 
-    options['body'] = JSON.stringify(data);
+    options.body = JSON.stringify(data);
   }
 
   const response = await fetch(url, options);
