@@ -3,7 +3,9 @@ import { add, parseISO                 } from 'date-fns';
 import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
+import config                          from 'src/config'
 import { request                     } from 'src/backend';
+import { APP_TYPE_VACCINATION        } from 'src/constants';
 import { formatDate, keysToSnakeCase } from 'src/utils/generic';
 import { AsyncResult                 } from 'src/utils/results';
 
@@ -176,7 +178,9 @@ export default function CovidForm() {
     || isValidInsuranceNumber(insuranceNumber);
   const canSubmit = examDate && firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
-    && (requestorTypeId === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG || haveRequestForm);
+    && (config.app_type === APP_TYPE_VACCINATION ||
+      requestorTypeId === REQUESTOR_TYPE_SAMOPL ||
+      examTypeId === EXAM_TYPE_AG || haveRequestForm);
 
   const hasRegistered = responseData?.status === 'OK';
   const disableSubmit = !canSubmit || hasRegistered;
@@ -215,7 +219,9 @@ export default function CovidForm() {
         setValue={setExamType} disabledValues={disabledExamTypeIds}
       />
 
-      {requestorTypeId === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG ||
+      {config.app_type === APP_TYPE_VACCINATION ||
+        requestorTypeId === REQUESTOR_TYPE_SAMOPL ||
+        examTypeId === EXAM_TYPE_AG ||
         <RequestFormCheckbox checked={haveRequestForm} setChecked={setHaveRequestForm} />}
 
       <ExamDateSelection

@@ -10,8 +10,9 @@ export function fillForm({
 } = {}) {
   insuranceNumber = insuranceNumber || generateInsuranceNumber()
 
-  findAvailableExamDate().first().click()
-  cy.get('#have-request-form .form-check-input').check()
+  findAvailableExamDate().click()
+  checkRequestFormCheckbox()
+
   cy.get('#first-name'      ).clear().type(firstName)
   cy.get('#last-name'       ).clear().type(lastName)
   cy.get('#municipality'    ).clear().type(municipality)
@@ -39,6 +40,14 @@ export function alert() {
   return cy.get('#covid-form-alert')
 }
 
+export function checkRequestFormCheckbox() {
+  const selector = '#have-request-form .form-check-input'
+
+  if (Cypress.$(selector).length) {
+    return cy.get(selector).check()
+  }
+}
+
 const random = Cypress._.random
 
 function generateInsuranceNumber() {
@@ -54,5 +63,7 @@ function generateInsuranceNumber() {
 }
 
 function findAvailableExamDate() {
-  return cy.get('.react-datepicker .react-datepicker__day:not(.react-datepicker__day--disabled')
+  const selector = '.react-datepicker .react-datepicker__day:not(.react-datepicker__day--disabled)'
+
+  return cy.get(selector).first()
 }

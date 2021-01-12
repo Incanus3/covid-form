@@ -12,19 +12,27 @@ import {
   INSURANCE_COMPANY_SAMOPL
 } from './constants';
 
+let procedureName;
+
+if (config.app_type === APP_TYPE_COVID_TEST) {
+  procedureName = 'vyšetření';
+} else {
+  procedureName = 'očkování';
+}
+
 export function ExamTypeSelection({ options, value, setValue, disabledValues, loading }) {
-  const id    = 'examination-type';
-  const label = 'Jaký druh vyšetření požadujete?';
+  const label = `Jaký druh ${procedureName} požadujete?`;
+  const id = 'examination-type';
 
   if (loading || options.lenth === 0) {
     let alertVariant, alertText;
 
     if (loading) {
       alertVariant = 'info';
-      alertText    = 'Načítám druhy vyšetření';
+      alertText    = `Načítám druhy ${procedureName}`;
     } else {
       alertVariant = 'danger';
-      alertText    = 'Nebyly nalezeny žádné druhy vyšetření.';
+      alertText    = `Nebyly nalezeny žádné druhy ${procedureName}.`;
     }
 
     return (
@@ -49,7 +57,7 @@ export function ExamTypeSelection({ options, value, setValue, disabledValues, lo
 
 export function ExamTimeSelection({ options, value, setValue, loading }) {
   const id    = 'examination-time'
-  const label = 'Čas vyšetření'
+  const label = `Čas ${procedureName}`
 
   if (loading || options.length === 0) {
     let alertVariant, alertText;
@@ -59,7 +67,7 @@ export function ExamTimeSelection({ options, value, setValue, loading }) {
       alertText    = 'Načítám časové sloty';
     } else {
       alertVariant = 'danger';
-      alertText    = 'Pro zvolený druh vyšetření nebyly nalezeny žádné časové sloty.';
+      alertText    = `Pro zvolený druh ${procedureName} nebyly nalezeny žádné časové sloty.`;
     }
 
     return (
@@ -92,7 +100,7 @@ export function ExamDateSelection({ value, setValue, minDate, maxDate, disabledD
 
   return (
     <Form.Group controlId="examination-date">
-      <Form.Label>Datum vyšetření</Form.Label>
+      <Form.Label>Datum {procedureName}</Form.Label>
       <ResponsiveDatePicker inline disabledKeyboardNavigation
         id='examination-date'
         selected={value}
@@ -107,22 +115,41 @@ export function ExamDateSelection({ value, setValue, minDate, maxDate, disabledD
 }
 
 export function RequestorTypeSelection({ value, setValue }) {
+  let label, options;
+
+  if (config.app_type === APP_TYPE_COVID_TEST) {
+    label = 'Kdo vyšetření požaduje?'
+    options = [
+      { id: REQUESTOR_TYPE_PL,
+        label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
+      { id: REQUESTOR_TYPE_KHS,
+        label: 'KHS (k vyšetření jsem indikován hygienikem)' },
+      { id: REQUESTOR_TYPE_SAMOPL,
+        label: 'Samoplátce (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
+      { id: REQUESTOR_TYPE_AG,
+        label: 'Veřejnost (dobrovolné bezplatné testování)' },
+    ]
+  } else {
+    label = 'Komu je očkování určeno?'
+    options = [
+      { id: REQUESTOR_TYPE_PL,
+        label: 'Zdavotnický pracovník' },
+      { id: REQUESTOR_TYPE_KHS,
+        label: 'Pracovník v sociálních službách' },
+      { id: REQUESTOR_TYPE_SAMOPL,
+        label: 'Pacient PZS' },
+      { id: REQUESTOR_TYPE_AG,
+        label: 'Klient instituce sociálních služeb' },
+    ]
+  }
+
   return (
     <RadioGroup
       id='requestor-type'
-      label='Kdo vyšetření požaduje?'
+      label={label}
       value={value}
       setter={setValue}
-      options={[
-        { id: REQUESTOR_TYPE_PL,
-          label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
-        { id: REQUESTOR_TYPE_KHS,
-          label: 'KHS (k vyšetření jsem indikován hygienikem)' },
-        { id: REQUESTOR_TYPE_SAMOPL,
-          label: 'Samoplátce (vyšetření si hradím sám a požaduji jej pouze pro svou potřebu)' },
-        { id: REQUESTOR_TYPE_AG,
-          label: 'Veřejnost (dobrovolné bezplatné testování)' },
-      ]}
+      options={options}
     />
   )
 }
