@@ -49,7 +49,7 @@ export class Auth {
     if (history) {
       const location = { pathname: redirectTo };
 
-      if (message) { location.state = message };
+      if (message) { location.state = message }
 
       history.push(location);
     }

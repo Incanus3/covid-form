@@ -11,7 +11,8 @@ import { AuthContext } from 'src/auth'
 
 function NavLink({ to, label, active, exact = false }) {
   return (
-    <Route path={to} children={({ match, location, history }) => (
+    // eslint-disable-next-line react/no-children-prop
+    <Route path={to} children={({ match }) => (
       <LinkContainer to={to} exact={exact}>
         <Nav.Link active={active === undefined ? !!match : active}>{label}</Nav.Link>
       </LinkContainer>

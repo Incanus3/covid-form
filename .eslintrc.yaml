@@ -1,0 +1,19 @@
+---
+  extends:
+    - eslint:recommended
+    - plugin:react/recommended
+  env:
+    node: true
+    mocha: true
+    es2021: true
+    browser: true
+  globals:
+    cy: readonly
+  parserOptions:
+    sourceType: "module"
+    ecmaFeatures:
+      jsx: true
+  rules:
+    react/display-name: off
+    react/prop-types: off
+    react/react-in-jsx-scope: off

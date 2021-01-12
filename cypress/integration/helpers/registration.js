@@ -10,6 +10,7 @@ export function fillForm({
 } = {}) {
   insuranceNumber = insuranceNumber || generateInsuranceNumber()
 
+  findAvailableExamDate().first().click()
   cy.get('#have-request-form .form-check-input').check()
   cy.get('#first-name'      ).clear().type(firstName)
   cy.get('#last-name'       ).clear().type(lastName)
@@ -50,4 +51,8 @@ function generateInsuranceNumber() {
   )
 
   return base + (11 - base % 11)
+}
+
+function findAvailableExamDate() {
+  return cy.get('.react-datepicker .react-datepicker__day:not(.react-datepicker__day--disabled')
 }

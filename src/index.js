@@ -9,7 +9,7 @@ import App from './components/App';
 function render(Component) {
   ReactDOM.render(
     <React.StrictMode>
-      <App />
+      <Component/>
     </React.StrictMode>,
     document.getElementById('root')
   );

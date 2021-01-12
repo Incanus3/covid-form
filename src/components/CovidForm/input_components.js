@@ -1,8 +1,10 @@
-import { isWeekend   } from 'date-fns';
-import { Alert, Form } from 'react-bootstrap';
+import { Alert, Form                                } from 'react-bootstrap';
+import { isWeekend, isMonday, isWednesday, isFriday } from 'date-fns';
 
+import config                               from 'src/config'
 import { RadioGroup, ResponsiveDatePicker } from 'src/utils/components';
 
+import { APP_TYPE_COVID_TEST } from 'src/constants';
 import {
   REQUESTOR_TYPE_AG, REQUESTOR_TYPE_PL, REQUESTOR_TYPE_KHS, REQUESTOR_TYPE_SAMOPL,
   INSURANCE_COMPANY_KHS, INSURANCE_COMPANY_VZP, INSURANCE_COMPANY_VOZP, INSURANCE_COMPANY_CPZP,
@@ -46,7 +48,7 @@ export function ExamTypeSelection({ options, value, setValue, disabledValues, lo
 }
 
 export function ExamTimeSelection({ options, value, setValue, loading }) {
-  const id    = 'examination-date'
+  const id    = 'examination-time'
   const label = 'Čas vyšetření'
 
   if (loading || options.length === 0) {
@@ -80,6 +82,14 @@ export function ExamTimeSelection({ options, value, setValue, loading }) {
 }
 
 export function ExamDateSelection({ value, setValue, minDate, maxDate, disabledDates }) {
+  let dateFilter;
+
+  if (config.app_type === APP_TYPE_COVID_TEST) {
+    dateFilter = (date) => !isWeekend(date)
+  } else {
+    dateFilter = (date) => isMonday(date) || isWednesday(date) || isFriday(date)
+  }
+
   return (
     <Form.Group controlId="examination-date">
       <Form.Label>Datum vyšetření</Form.Label>
@@ -90,7 +100,7 @@ export function ExamDateSelection({ value, setValue, minDate, maxDate, disabledD
         minDate={minDate}
         maxDate={maxDate}
         excludeDates={disabledDates}
-        filterDate={(date) => !isWeekend(date)}
+        filterDate={dateFilter}
       />
     </Form.Group>
   )

@@ -3,7 +3,6 @@ import { add, parseISO                 } from 'date-fns';
 import { useState, useEffect           } from 'react';
 import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
-// TODO: configure app alias in webpack
 import { request                     } from 'src/backend';
 import { formatDate, keysToSnakeCase } from 'src/utils/generic';
 import { AsyncResult                 } from 'src/utils/results';
@@ -32,7 +31,7 @@ function isValidInsuranceNumber(input) {
 
 export default function CovidForm() {
   const [haveRequestForm,     setHaveRequestForm]     = useState(false);
-  const [examDate,            setExamDate]            = useState(add(new Date(), { days: 1 }));
+  const [examDate,            setExamDate]            = useState(null);
   const [requestorTypeId,     setRequestorTypeId]     = useState(null);
   const [examTypeId,          setExamTypeId]          = useState(null);
   const [timeSlotId,          setTimeSlotId]          = useState(null);
@@ -150,7 +149,8 @@ export default function CovidForm() {
         email, phoneNumber, insuranceNumber, insuranceCompany,
       }),
       exam: keysToSnakeCase({
-        requestorType: requestorTypeId, examType: examTypeId, examDate, timeSlotId
+        requestorType: requestorTypeId, examType: examTypeId,
+        examDate: formatDate(examDate), timeSlotId
       })
     };
 
@@ -174,7 +174,7 @@ export default function CovidForm() {
   const phoneIsValid  = phoneNumber.match(PHONE_REGEX);
   const insNumIsValid = insuranceCompany === INSURANCE_COMPANY_KHS
     || isValidInsuranceNumber(insuranceNumber);
-  const canSubmit = firstName && lastName && municipality
+  const canSubmit = examDate && firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
     && (requestorTypeId === REQUESTOR_TYPE_SAMOPL || examTypeId === EXAM_TYPE_AG || haveRequestForm);
 
