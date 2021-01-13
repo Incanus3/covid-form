@@ -51,7 +51,7 @@ function generateInsuranceNumber() {
   const isMan = random(1)
   const base = (
     random(60, 99) * Math.pow(10, 8) +
-    (isMan ? random(1, 12) : random(50, 62)) * Math.pow(10, 6) +
+    (isMan ? random(1, 12) : random(51, 62)) * Math.pow(10, 6) +
     random(1, 28) * Math.pow(10, 4) +
     random(9989)
   )
