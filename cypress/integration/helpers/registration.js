@@ -41,11 +41,8 @@ export function alert() {
 }
 
 export function checkRequestFormCheckbox() {
-  const selector = '#have-request-form .form-check-input'
-
-  if (Cypress.$(selector).length) {
-    return cy.get(selector).check()
-  }
+  // may not be there, so we can't use cy.get()
+  Cypress.$('#have-request-form .form-check-input').trigger('click')
 }
 
 const random = Cypress._.random

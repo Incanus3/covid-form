@@ -155,24 +155,31 @@ export function RequestorTypeSelection({ value, setValue }) {
 }
 
 export function InsuranceCompanySelection({ value, setValue }) {
+  let options = [
+    { id: INSURANCE_COMPANY_VZP,    label: 'VZP'        },
+    { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP'       },
+    { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP'       },
+    { id: INSURANCE_COMPANY_OZP,    label: 'OZP'        },
+    { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ'        },
+    { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV'       },
+    { id: INSURANCE_COMPANY_RBP,    label: 'RBP'        },
+    { id: INSURANCE_COMPANY_SAMOPL, label: 'Samoplátce' },
+  ]
+
+  if (config.app_type === APP_TYPE_COVID_TEST) {
+    options.push(
+      { id: INSURANCE_COMPANY_KHS,
+        label: 'Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS' },
+    )
+  }
+
   return (
     <RadioGroup
       id='insurance-company'
       label='Zdravotní pojišťovna'
       value={value}
       setter={setValue}
-      options={[
-        { id: INSURANCE_COMPANY_VZP,    label: 'VZP'        },
-        { id: INSURANCE_COMPANY_VOZP,   label: 'VoZP'       },
-        { id: INSURANCE_COMPANY_CPZP,   label: 'ČPZP'       },
-        { id: INSURANCE_COMPANY_OZP,    label: 'OZP'        },
-        { id: INSURANCE_COMPANY_ZPS,    label: 'ZPŠ'        },
-        { id: INSURANCE_COMPANY_ZPMV,   label: 'ZPMV'       },
-        { id: INSURANCE_COMPANY_RBP,    label: 'RBP'        },
-        { id: INSURANCE_COMPANY_SAMOPL, label: 'Samoplátce' },
-        { id: INSURANCE_COMPANY_KHS,
-          label: 'Cizinec bez zdravotní pojišťovny, indikovaný lékařem / KHS' },
-      ]}
+      options={options}
     />
   )
 }

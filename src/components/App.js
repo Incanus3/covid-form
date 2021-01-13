@@ -1,6 +1,9 @@
+import { Helmet                                           } from "react-helmet";
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
-import { Auth, AuthContext } from 'src/auth'
+import config                   from 'src/config'
+import { APP_TYPE_VACCINATION } from 'src/constants';
+import { Auth, AuthContext    } from 'src/auth'
 
 import Navbar         from './Navbar'
 import Registration   from './Registration'
@@ -26,25 +29,39 @@ function LoggedOutRoute({ path, exact = false, children, redirectTo }) {
 }
 
 export default function App() {
+  let title;
+
+  if (config.app_type === APP_TYPE_VACCINATION) {
+    title = 'Objednání k očkování proti COVID-19'
+  } else {
+    title = 'Objednání k vyšetření na COVID-19'
+  }
+
   return (
-    <AuthContext.Provider value={auth}>
-      <Router>
-        <Navbar />
+    <>
+      <Helmet>
+        <title>{title}</title>
+      </Helmet>
 
-        <Switch>
-          <Route path="/admin">
-            <Switch>
-              <LoggedOutRoute path="/admin/login" redirectTo="/admin/export"><Login /></LoggedOutRoute>
-              <LoggedInRoute path="/admin/export"><Administration /></LoggedInRoute>
-              <Redirect to="/admin/login" />
-            </Switch>
-          </Route>
+      <AuthContext.Provider value={auth}>
+        <Router>
+          <Navbar />
 
-          <Route path="/" exact={true}>
-            <Registration />
-          </Route>
-        </Switch>
-      </Router>
-    </AuthContext.Provider>
+          <Switch>
+            <Route path="/admin">
+              <Switch>
+                <LoggedOutRoute path="/admin/login" redirectTo="/admin/export"><Login /></LoggedOutRoute>
+                <LoggedInRoute path="/admin/export"><Administration /></LoggedInRoute>
+                <Redirect to="/admin/login" />
+              </Switch>
+            </Route>
+
+            <Route path="/" exact={true}>
+              <Registration />
+            </Route>
+          </Switch>
+        </Router>
+      </AuthContext.Provider>
+    </>
   );
 }
