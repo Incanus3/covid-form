@@ -5,10 +5,11 @@ import config                   from 'src/config'
 import { APP_TYPE_VACCINATION } from 'src/constants';
 import { Auth, AuthContext    } from 'src/auth'
 
-import Navbar         from './Navbar'
-import Registration   from './Registration'
-import Login          from './admin/Login'
-import Administration from './admin/Administration'
+import Navbar             from './Navbar'
+import Registration       from './Registration'
+import Login              from './admin/Login'
+import Export             from './admin/Export'
+import TimeSlotManagement from './admin/TimeSlotManagement'
 
 const auth = new Auth()
 
@@ -51,7 +52,8 @@ export default function App() {
             <Route path="/admin">
               <Switch>
                 <LoggedOutRoute path="/admin/login" redirectTo="/admin/export"><Login /></LoggedOutRoute>
-                <LoggedInRoute path="/admin/export"><Administration /></LoggedInRoute>
+                <LoggedInRoute path="/admin/export"><Export /></LoggedInRoute>
+                <LoggedInRoute path="/admin/time_slot_management"><TimeSlotManagement /></LoggedInRoute>
                 <Redirect to="/admin/login" />
               </Switch>
             </Route>

@@ -9,12 +9,12 @@ import { BsChevronCompactRight  } from "react-icons/bs";
 
 import { AuthContext } from 'src/auth'
 
-function NavLink({ to, label, active, exact = false }) {
+function NavLink({ to, label, active, exact = false, ...rest }) {
   return (
     // eslint-disable-next-line react/no-children-prop
     <Route path={to} children={({ match }) => (
       <LinkContainer to={to} exact={exact}>
-        <Nav.Link active={active === undefined ? !!match : active}>{label}</Nav.Link>
+        <Nav.Link {...rest} active={active === undefined ? !!match : active}>{label}</Nav.Link>
       </LinkContainer>
     )}/>
   )
@@ -41,6 +41,11 @@ function CovidNavbar({ location, history }) {
               <>
                 <Navbar.Text><BsChevronCompactRight /></Navbar.Text>
                 <NavLink id="export-link" label='CSV export' to='/admin/export'/>
+                <NavLink
+                  id="time-slot-management-link"
+                  label='Časové sloty'
+                  to='/admin/time_slot_management'
+                />
               </>}
           </Nav>
 

@@ -1,13 +1,19 @@
 import 'element-closest';
 import cs                                               from 'date-fns/locale/cs';
 import { useState, useEffect                          } from 'react';
-import { Form                                         } from 'react-bootstrap';
+import { Form, OverlayTrigger, Tooltip                } from 'react-bootstrap';
 import DatePicker, { registerLocale, setDefaultLocale } from 'react-datepicker';
 
 registerLocale('cs', cs);
 setDefaultLocale('cs');
 
 export { DatePicker };
+
+export function WithTooltip({ text, children }) {
+  return (
+    <OverlayTrigger overlay={<Tooltip>{text}</Tooltip>}>{children}</OverlayTrigger>
+  )
+}
 
 export function Radio(props) {
   return (

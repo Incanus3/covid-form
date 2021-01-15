@@ -13,6 +13,8 @@
     sourceType: "module"
     ecmaFeatures:
       jsx: true
+  plugins:
+    - only-warn
   rules:
     react/display-name: off
     react/prop-types: off

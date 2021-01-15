@@ -2,7 +2,7 @@
 
 set -euf -o pipefail
 
-if [ $1 == "vaccination" ]; then
+if [ "$1" == "vaccination" ]; then
   export REACT_APP_TYPE='vaccination'
   export REACT_APP_BACKEND_URL='https://vaccination-form-backend.production-e.asrv.cz'
 
@@ -25,14 +25,14 @@ echo "deploying to $deploy_to as release $timestamp"
 
 yarn build
 
-for server in ${servers[@]}; do
+for server in "${servers[@]}"; do
   echo "deploying to $server"
-  scp -r build $server:$deploy_to/releases/$timestamp > /dev/null
-  ssh -T $server <<EOF
-    cd $deploy_to
+  scp -r build "$server:$deploy_to/releases/$timestamp" > /dev/null
+  ssh -T "$server" <<EOF
+    cd "$deploy_to"
     rm current
-    ln -s releases/$timestamp current
+    ln -s "releases/$timestamp" current
     cd releases
-    ls -t | tail -n +$(($keep_releases + 1)) | xargs rm -r
+    ls -t | tail -n "+$(($keep_releases + 1))" | xargs rm -r
 EOF
 done
