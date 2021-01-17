@@ -5,13 +5,15 @@ import { withRouter                                            } from 'react-rou
 import { Button, Container, Row, Col, Card, Form, Modal, Table } from 'react-bootstrap';
 import { BsPencilSquare                                        } from 'react-icons/bs';
 import DatePicker                                                from 'react-datepicker';
+import Select                                                    from 'react-select'
 
-import { AuthContext } from 'src/auth';
-import { TimeSlot    } from 'src/models';
-import { WithTooltip } from 'src/utils/components';
+import { AuthContext        } from 'src/auth';
+import { ExamType, TimeSlot } from 'src/models';
+import { WithTooltip        } from 'src/utils/components';
 
 function TimeSlotRow({ timeSlot, coefficientMultiplier, edit }) {
   const slotCapacity = _.round(coefficientMultiplier * timeSlot.limitCoefficient);
+  const examTypes    = _.join(_.map(timeSlot.examTypes, 'id'), ', ');
 
   return (
     <tr>
@@ -20,6 +22,7 @@ function TimeSlotRow({ timeSlot, coefficientMultiplier, edit }) {
       <td>{timeSlot.formattedEndTime  }</td>
       <td>{timeSlot.limitCoefficient  }</td>
       <td>{slotCapacity               }</td>
+      <td>{examTypes                  }</td>
       <td>
         <WithTooltip text='editovat'><BsPencilSquare onClick={() => edit(timeSlot)} /></WithTooltip>
       </td>
@@ -35,12 +38,13 @@ function TimeSlotTable({ timeSlots, dailyRegistrationLimit, edit }) {
     <Table responsive size='sm' id='time-slot-table'>
       <thead>
         <tr>
-          <th>Název              </th>
-          <th>Od                 </th>
-          <th>Do                 </th>
-          <th>Koeficient kapacity</th>
-          <th>Vypočtená kapacita </th>
-          <th>Akce               </th>
+          <th>Název                  </th>
+          <th>Od                     </th>
+          <th>Do                     </th>
+          <th>Koeficient kapacity    </th>
+          <th>Vypočtená kapacita     </th>
+          <th>Povolené typy vyšetření</th>
+          <th>Akce                   </th>
         </tr>
       </thead>
 
@@ -62,24 +66,32 @@ function TimeSlotManagement({ history }) {
   const auth = useContext(AuthContext)
 
   const [settings,  setSettings ] = useState(null);
+  const [examTypes, setExamTypes] = useState(null);
   const [timeSlots, setTimeSlots] = useState(null);
   const [editedId,  setEditedId ] = useState(null);
 
-  async function loadData(path, successHandler) {
-    (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', path))
+  async function loadData(path, options, successHandler) {
+    (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', path, options))
       .onSuccess(async (response) => response.ok && successHandler(await response.json()))
   }
 
   async function updateTimeSlot(id, values) {
+    const data = values.toJSON();
+
+    data.exam_types = _.map(data.exam_types, 'id');
+
     // TODO: show success or error message
     (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history,
-      'PUT', `/admin/crud/time_slots/${id}`, { data: values.toJSON() }
+      'PUT', `/admin/crud/time_slots/${id}`, { data }
     )).onSuccess(async (response) => response.ok && console.log(await response.json()))
   }
 
-  const loadSettings  = async () => loadData('/admin/settings',
+  const loadSettings  = async () => loadData('/admin/settings', {},
     (data) => setSettings(data.settings))
+  const loadExamTypes = async () => loadData('/admin/crud/exam_types', {},
+    (data) => setExamTypes(data.exam_types.map((etJSON) => ExamType.fromJSON(etJSON))))
   const loadTimeSlots = async () => loadData('/admin/crud/time_slots',
+    { params: { 'with[]': 'exam_types' } },
     (data) => setTimeSlots(data.time_slots.map((tsJSON) => TimeSlot.fromJSON(tsJSON))))
 
   async function submit(updatedTimeSlot) {
@@ -91,8 +103,9 @@ function TimeSlotManagement({ history }) {
   }
 
   useEffect(() => {
-    loadSettings()
-    loadTimeSlots()
+    loadSettings();
+    loadExamTypes();
+    loadTimeSlots();
     // eslint-disable-next-line
   }, [])
 
@@ -113,19 +126,21 @@ function TimeSlotManagement({ history }) {
 
       {editedId && <TimeSlotModal
         show={true}
-        submit={submit}
         hide={() => setEditedId(null)}
+        submit={submit}
         timeSlot={_.find(timeSlots, { id: editedId })}
+        availableExamTypes={examTypes}
       />}
     </Container>
   )
 }
 
-function TimeSlotModal({ show, hide, timeSlot, submit }) {
+function TimeSlotModal({ show, hide, timeSlot, availableExamTypes, submit }) {
   const [name, setName                        ] = useState(timeSlot.name);
   const [startTime, setStartTime              ] = useState(timeSlot.startTime);
   const [endTime, setEndTime                  ] = useState(timeSlot.endTime);
   const [limitCoefficient, setLimitCoefficient] = useState(timeSlot.limitCoefficient);
+  const [examTypes, setExamTypes              ] = useState(timeSlot.examTypes);
 
   const FromInput = React.forwardRef(({ value, onClick }, ref) =>
     <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
@@ -204,6 +219,24 @@ function TimeSlotModal({ show, hide, timeSlot, submit }) {
               </Form.Control.Feedback>
             </Col>
           </Form.Group>
+
+          <Form.Group id='time-slot-exam-types' as={Row}>
+            <Form.Label column sm={5}>Typy testů</Form.Label>
+            <Col sm={7}>
+              <Select
+                options={availableExamTypes}
+                value={examTypes}
+                onChange={(values) => setExamTypes(values || [])}
+                getOptionValue={(examType) => examType.id}
+                getOptionLabel={(examType) => examType.description}
+                isMulti={true}
+                isSearchable={false}
+                closeMenuOnSelect={false}
+                hideSelectedOptions={true}
+                placeholder='Vyberte hodnoty...'
+              />
+            </Col>
+          </Form.Group>
         </Form>
       </Modal.Body>
 
@@ -213,7 +246,7 @@ function TimeSlotModal({ show, hide, timeSlot, submit }) {
         </Button>
         <Button
           variant="primary"
-          onClick={() => submit(new TimeSlot({ name, startTime, endTime, limitCoefficient }))}
+          onClick={() => submit(new TimeSlot({ name, startTime, endTime, limitCoefficient, examTypes }))}
         >
           Uložit
         </Button>
