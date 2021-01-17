@@ -14,7 +14,12 @@ else
   deploy_dir='covid-form-frontend'
 fi
 
-servers=(production1-tth production2-tth)
+if [ -n "${2-}" ]; then
+  servers=("$2")
+else
+  servers=(production1-tth production2-tth)
+fi
+
 deploy_to="deploy/spital/$deploy_dir"
 timestamp="$(date +%Y%m%d%H%M)"
 keep_releases=5

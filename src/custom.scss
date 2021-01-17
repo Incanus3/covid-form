@@ -35,6 +35,14 @@ form {
   }
 }
 
+.card-body > :last-child > table {
+  margin-bottom: 0;
+}
+
+.table:not(.bordered) th {
+  border-top: 0;
+}
+
 .form-label {
   font-weight: bold;
 }
@@ -54,6 +62,14 @@ form {
 
 .react-datepicker__input-container .form-control[readonly] {
   background-color: #fff;
+}
+
+.react-datepicker__time-container, .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
+  width: 257px;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
 }
 
 #csv-export-card {
