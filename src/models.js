@@ -24,7 +24,7 @@ export class ExamType {
 }
 
 export class TimeSlot {
-  constructor({ id, name, startTime, endTime, limitCoefficient, examTypes }) {
+  constructor({ id, name, startTime, endTime, limitCoefficient, examTypes } = {}) {
     this.id               = id;
     this.name             = name;
     this.startTime        = startTime;

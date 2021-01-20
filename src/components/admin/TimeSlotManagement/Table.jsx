@@ -1,10 +1,10 @@
 import _ from 'lodash';
 
-import { Table          } from 'react-bootstrap';
-import { BsPencilSquare } from 'react-icons/bs';
-import { WithTooltip    } from 'src/utils/components';
+import { Table                                 } from 'react-bootstrap';
+import { BsPencilSquare, BsPlusSquare, BsTrash } from 'react-icons/bs';
+import { WithTooltip                           } from 'src/utils/components';
 
-function TimeSlotRow({ timeSlot, coefficientMultiplier, edit }) {
+function TimeSlotRow({ timeSlot, coefficientMultiplier, edit, remove }) {
   const slotCapacity = _.round(coefficientMultiplier * timeSlot.limitCoefficient);
   const examTypes    = _.join(_.map(timeSlot.examTypes, 'id'), ', ');
 
@@ -16,14 +16,22 @@ function TimeSlotRow({ timeSlot, coefficientMultiplier, edit }) {
       <td>{timeSlot.limitCoefficient  }</td>
       <td>{slotCapacity               }</td>
       <td>{examTypes                  }</td>
-      <td>
-        <WithTooltip text='editovat'><BsPencilSquare onClick={() => edit(timeSlot)} /></WithTooltip>
+      <td className='actions-column'>
+        <div className='d-inline'>
+          <WithTooltip text='editovat'>
+            <BsPencilSquare onClick={() => edit(timeSlot)} className='mx-1' />
+          </WithTooltip>
+
+          <WithTooltip text='smazat'  >
+            <BsTrash onClick={() => remove(timeSlot)} className='mx-1' />
+          </WithTooltip>
+        </div>
       </td>
     </tr>
   )
 }
 
-export default function TimeSlotTable({ timeSlots, dailyRegistrationLimit, edit }) {
+export default function TimeSlotTable({ timeSlots, dailyRegistrationLimit, create, edit, remove }) {
   const coefficientSum        = _.sum(_.map(timeSlots, 'limitCoefficient'));
   const coefficientMultiplier = dailyRegistrationLimit / coefficientSum;
 
@@ -37,7 +45,9 @@ export default function TimeSlotTable({ timeSlots, dailyRegistrationLimit, edit 
           <th>Koeficient kapacity    </th>
           <th>Vypočtená kapacita     </th>
           <th>Povolené typy vyšetření</th>
-          <th>Akce                   </th>
+          <th className='actions-column'>
+            <WithTooltip text='vytvořit'><BsPlusSquare onClick={create} className='mx-1' /></WithTooltip>
+          </th>
         </tr>
       </thead>
 
@@ -46,6 +56,7 @@ export default function TimeSlotTable({ timeSlots, dailyRegistrationLimit, edit 
           <TimeSlotRow
             key={timeSlot.id}
             edit={edit}
+            remove={remove}
             timeSlot={timeSlot}
             coefficientMultiplier={coefficientMultiplier}
           />

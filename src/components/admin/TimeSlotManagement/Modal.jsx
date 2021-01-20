@@ -5,7 +5,7 @@ import Select                            from 'react-select'
 
 import { TimeSlot } from 'src/models';
 
-export default function TimeSlotModal({ show, hide, timeSlot, availableExamTypes, submit }) {
+export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, submit }) {
   const [name, setName                        ] = useState(timeSlot.name);
   const [startTime, setStartTime              ] = useState(timeSlot.startTime);
   const [endTime, setEndTime                  ] = useState(timeSlot.endTime);
@@ -13,17 +13,27 @@ export default function TimeSlotModal({ show, hide, timeSlot, availableExamTypes
   const [examTypes, setExamTypes              ] = useState(timeSlot.examTypes);
 
   const FromInput = React.forwardRef(({ value, onClick }, ref) =>
-    <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
+    <>
+      <Form.Control readOnly value={value} onClick={onClick} ref={ref} isInvalid={!startTime} />
+      <Form.Control.Feedback type="invalid">
+        Tato položka je povinná
+      </Form.Control.Feedback>
+    </>
   )
 
   const ToInput = React.forwardRef(({ value, onClick }, ref) =>
-    <Form.Control readOnly value={value} onClick={onClick} ref={ref} />
+    <>
+      <Form.Control readOnly value={value} onClick={onClick} ref={ref} isInvalid={!endTime} />
+      <Form.Control.Feedback type="invalid">
+        Tato položka je povinná
+      </Form.Control.Feedback>
+    </>
   )
 
   return (
-    <Modal show={show} onHide={hide} id='time-slot-modal'>
+    <Modal show={true} onHide={hide} id='time-slot-modal'>
       <Modal.Header closeButton>
-        <Modal.Title>Editace časového slotu</Modal.Title>
+        <Modal.Title>{timeSlot.id ? 'Editace' : 'Vytvoření'} časového slotu</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
@@ -116,7 +126,9 @@ export default function TimeSlotModal({ show, hide, timeSlot, availableExamTypes
         </Button>
         <Button
           variant="primary"
-          onClick={() => submit(new TimeSlot({ name, startTime, endTime, limitCoefficient, examTypes }))}
+          onClick={() => submit(
+            new TimeSlot({ name, startTime, endTime, limitCoefficient, examTypes })
+          )}
         >
           Uložit
         </Button>

@@ -1,7 +1,7 @@
 import 'element-closest';
 import cs                                               from 'date-fns/locale/cs';
 import { useState, useEffect                          } from 'react';
-import { Form, OverlayTrigger, Tooltip                } from 'react-bootstrap';
+import { Button, Form, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DatePicker, { registerLocale, setDefaultLocale } from 'react-datepicker';
 
 registerLocale('cs', cs);
@@ -43,6 +43,29 @@ export function RadioGroup(props) {
         />)}
     </Form.Group>
   )
+}
+
+export function ConfirmModal({
+  title, prompt, onConfirm, onCancel, show = true,
+  confirmText = 'Ano', cancelText = 'Ne',
+  confirmButtonVariant = 'danger', cancelButtonVariant = 'secondary',
+}) {
+  return (
+    <Modal show={show} onHide={onCancel} id='time-slot-modal'>
+      <Modal.Header closeButton>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        {prompt}
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button variant={cancelButtonVariant } onClick={onCancel } >{cancelText }</Button>
+        <Button variant={confirmButtonVariant} onClick={onConfirm} >{confirmText}</Button>
+      </Modal.Footer>
+    </Modal>
+  );
 }
 
 const MONTH_CONTAINER_CLASS    = "react-datepicker__month-container";

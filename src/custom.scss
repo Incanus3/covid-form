@@ -43,6 +43,10 @@ form {
   border-top: 0;
 }
 
+.table td.actions-column, th.actions-column {
+  width: 64px;
+}
+
 .form-label {
   font-weight: bold;
 }
