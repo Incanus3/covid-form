@@ -2,14 +2,18 @@ import React       from 'react';
 import { History } from 'history';
 
 import { request, RequestOptions  } from 'src/backend';
-import { Success, Failure         } from 'src/utils/results';
+import { Result, Success, Failure } from 'src/utils/results';
 import { DataStorage, JSONStorage } from 'src/utils/storage';
 
 export class AuthError extends Error {}
 export class NotLoggedIn extends AuthError {}
 export class SessionExpiredError extends AuthError {}
 
-export class SessionExpiredFailure extends Failure {}
+export class SessionExpiredFailure extends Failure<null> {
+  constructor() {
+    super(null);
+  }
+}
 
 type RequestArgs = [string, string, RequestOptions?];
 
@@ -60,8 +64,9 @@ export class Auth {
     return await this._withRefresh(() => this._authenticatedRequest(...args));
   }
 
-  // TODO: type this - for this, we need typed Result
-  async authenticatedRequestWithLogoutWhenSessionExpired(history: History, ...args: RequestArgs) {
+  async authenticatedRequestWithLogoutWhenSessionExpired(
+    history: History, ...args: RequestArgs
+  ): Promise<Result<Response, null>> {
     try {
       return new Success(await this.authenticatedRequest(...args));
     } catch (error) {

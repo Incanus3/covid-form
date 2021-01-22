@@ -1,11 +1,11 @@
 type StoredData = Record<string, any>;
 
 export interface DataStorage {
-  read():           any;
-  write(data: any): void;
-  clear():          void;
-  isEmpty():        boolean;
-  isFilled():       boolean;
+  read():                  any;
+  write(data: StoredData): void;
+  clear():                 void;
+  isEmpty():               boolean;
+  isFilled():              boolean;
 }
 
 export class JSONStorage implements DataStorage {
