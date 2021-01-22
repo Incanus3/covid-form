@@ -1,16 +1,19 @@
+import _ from 'lodash';
+
 import React, { useState }               from 'react';
-import { Button, Row, Col, Form, Modal } from 'react-bootstrap';
+import { Alert, Button, Row, Col, Form, Modal } from 'react-bootstrap';
 import DatePicker                        from 'react-datepicker';
 import Select                            from 'react-select'
 
 import { TimeSlot } from 'src/models';
 
 export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, submit }) {
-  const [name, setName                        ] = useState(timeSlot.name);
-  const [startTime, setStartTime              ] = useState(timeSlot.startTime);
-  const [endTime, setEndTime                  ] = useState(timeSlot.endTime);
+  const [error,            setError           ] = useState(null);
+  const [name,             setName            ] = useState(timeSlot.name);
+  const [startTime,        setStartTime       ] = useState(timeSlot.startTime);
+  const [endTime,          setEndTime         ] = useState(timeSlot.endTime);
   const [limitCoefficient, setLimitCoefficient] = useState(timeSlot.limitCoefficient);
-  const [examTypes, setExamTypes              ] = useState(timeSlot.examTypes);
+  const [examTypes,        setExamTypes       ] = useState(timeSlot.examTypes);
 
   const FromInput = React.forwardRef(({ value, onClick }, ref) =>
     <>
@@ -37,6 +40,8 @@ export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, subm
       </Modal.Header>
 
       <Modal.Body>
+        {error && <Alert variant='danger'>{error}</Alert> || null}
+
         <Form noValidate id='time-slot-form'>
           <Form.Group id='time-slot-name' as={Row}>
             <Form.Label column sm={5}>Název</Form.Label>
@@ -126,9 +131,14 @@ export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, subm
         </Button>
         <Button
           variant="primary"
-          onClick={() => submit(
-            new TimeSlot({ name, startTime, endTime, limitCoefficient, examTypes })
-          )}
+          onClick={async () => {
+            (await submit(new TimeSlot({ name, startTime, endTime, limitCoefficient, examTypes })))
+              .onFailure(async (data) => {
+                setError(
+                  `Nemohu ${_.isNil(timeSlot.id) ? 'vytvořit' : 'upravit'} časový slot: ${data.error}.`
+                );
+              });
+          }}
         >
           Uložit
         </Button>

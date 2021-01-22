@@ -1,9 +1,9 @@
 import React       from 'react';
 import { History } from 'history';
 
-import { request, RequestOptions  } from 'src/backend';
-import { Result, Success, Failure } from 'src/utils/results';
-import { DataStorage, JSONStorage } from 'src/utils/storage';
+import { AsyncResult, AsyncSuccess, AsyncFailure } from 'src/utils/results';
+import { DataStorage, JSONStorage                } from 'src/utils/storage';
+import { request, RequestOptions                 } from 'src/backend';
 
 export type { RequestOptions };
 
@@ -11,7 +11,7 @@ export class AuthError extends Error {}
 export class NotLoggedIn extends AuthError {}
 export class SessionExpiredError extends AuthError {}
 
-export class SessionExpiredFailure extends Failure<null> {
+export class SessionExpiredFailure extends AsyncFailure<null> {
   constructor() {
     super(null);
   }
@@ -68,9 +68,9 @@ export class Auth {
 
   async authenticatedRequestWithLogoutWhenSessionExpired(
     history: History, ...args: RequestArgs
-  ): Promise<Result<Response, null>> {
+  ): Promise<AsyncResult<Response, null>> {
     try {
-      return new Success(await this.authenticatedRequest(...args));
+      return new AsyncSuccess(await this.authenticatedRequest(...args));
     } catch (error) {
       if (error instanceof SessionExpiredError) {
         this.logOut(history, { message: SESSION_EXPIRED });

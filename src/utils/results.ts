@@ -54,6 +54,14 @@ export class Result<SDT, FDT> extends ResultBase<SDT, FDT> {
 
     return this;
   }
+
+  chain<SDT2, FDT2>(transformer: (data: SDT) => Result<SDT2, FDT2>): Result<SDT | SDT2, FDT | FDT2> {
+    if (this.isSuccess) {
+      return transformer(this.successData as SDT);
+    } else {
+      return this;
+    }
+  }
 }
 
 export class AsyncResult<SDT, FDT> extends ResultBase<SDT, FDT> {
@@ -85,6 +93,14 @@ export class AsyncResult<SDT, FDT> extends ResultBase<SDT, FDT> {
     }
 
     return this;
+  }
+
+  async chain<SDT2, FDT2>(transformer: (data: SDT) => Promise<AsyncResult<SDT2, FDT2>>): Promise<AsyncResult<SDT | SDT2, FDT | FDT2>> {
+    if (this.isSuccess) {
+      return await transformer(this.successData as SDT);
+    } else {
+      return this;
+    }
   }
 }
 

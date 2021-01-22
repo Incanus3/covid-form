@@ -23,7 +23,6 @@
     "noImplicitThis": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "noUnusedLocals": true,
     "baseUrl": "."
   },
   "composite": true,
