@@ -19,3 +19,18 @@
     react/display-name: off
     react/prop-types: off
     react/react-in-jsx-scope: off
+  overrides:
+    - files: ["**/*.ts", "**/*.tsx"]
+      parser: '@typescript-eslint/parser'
+      plugins:
+        - only-warn
+        - '@typescript-eslint'
+      extends:
+        - eslint:recommended
+        - plugin:react/recommended
+        - plugin:@typescript-eslint/recommended
+      rules:
+        react/display-name: off
+        react/prop-types: off
+        react/react-in-jsx-scope: off
+        '@typescript-eslint/no-explicit-any': off
