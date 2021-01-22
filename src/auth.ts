@@ -5,6 +5,8 @@ import { request, RequestOptions  } from 'src/backend';
 import { Result, Success, Failure } from 'src/utils/results';
 import { DataStorage, JSONStorage } from 'src/utils/storage';
 
+export type { RequestOptions };
+
 export class AuthError extends Error {}
 export class NotLoggedIn extends AuthError {}
 export class SessionExpiredError extends AuthError {}
@@ -148,7 +150,7 @@ export class Auth {
   }
 }
 
-export const AuthContext = React.createContext(null);
+export const AuthContext = React.createContext<Auth | null>(null);
 
 class AuthMessage {
   message:  string;
