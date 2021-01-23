@@ -17,7 +17,7 @@ export class SessionExpiredFailure extends AsyncFailure<null> {
   }
 }
 
-type RequestArgs = [string, string, RequestOptions?];
+export type RequestArgs = [string, string, RequestOptions?];
 
 export class Auth {
   storage:      DataStorage;

@@ -4,85 +4,59 @@ import React, { useState, useEffect, useContext } from 'react';
 import { withRouter, RouteComponentProps        } from 'react-router-dom';
 import { Alert, Container, Card                 } from 'react-bootstrap';
 
-import { AsyncResult                       } from 'src/utils/results';
-import { ConfirmModal                      } from 'src/utils/components';
-import { ExamType, TimeSlot                } from 'src/models';
-import { Auth, AuthContext, RequestOptions } from 'src/auth';
+import { AsyncResult                              } from 'src/utils/results';
+import { ConfirmModal                             } from 'src/utils/components';
+import { Entity, ExamType, TimeSlot, JSONData     } from 'src/models';
+import { ExamTypeCRUDService, TimeSlotCRUDService } from 'src/services/crud';
+import { Auth, AuthContext                        } from 'src/auth';
 
 import TimeSlotModal from './Modal'
 import TimeSlotTable from './Table'
 
-type Entity   = Record<string, any>;
-type JSONData = Record<string, any>;
-
 function TimeSlotManagement({ history }: RouteComponentProps) {
   const auth = useContext<Auth | null>(AuthContext) as Auth;
 
-  const [errors,    setErrors   ] = useState<string[]>([]);
-  const [settings,  setSettings ] = useState<Entity   | null>(null);
-  const [examTypes, setExamTypes] = useState<Entity[] | null>(null);
-  const [timeSlots, setTimeSlots] = useState<Entity[] | null>(null);
-  const [editedId,  setEditedId ] = useState<number   | null>(null);
-  const [deletedId, setDeletedId] = useState<number   | null>(null);
+  const timeSlotService = new TimeSlotCRUDService(auth, history);
+  const examTypeService = new ExamTypeCRUDService(auth, history);
+
+  const [errors,    setErrors   ] = useState<string[]  >([]);
+  const [examTypes, setExamTypes] = useState<ExamType[]>([]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [settings,  setSettings ] = useState<Entity | null>(null);
+  const [editedId,  setEditedId ] = useState<number | null>(null);
+  const [deletedId, setDeletedId] = useState<number | null>(null);
   const [creating,  setCreating ] = useState<boolean>(false);
 
-  function getDeletedSlot(): Entity | null { return _.find(timeSlots, { id: deletedId }) ?? null }
-
-  async function loadData(
-    path: string, options: RequestOptions, successHandler: (data: any) => void
-  ): Promise<void> {
-    (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', path, options))
-      .onSuccess(async (response) => { response.ok && successHandler(await response.json()) })
+  function getDeletedSlot(): TimeSlot | undefined {
+    return _.find(timeSlots, (timeSlot: TimeSlot) => timeSlot.id === deletedId)
   }
 
-  async function createTimeSlot(values: Entity): Promise<AsyncResult<any, any>> {
-    const data = values.toJSON();
-
-    data.exam_types = _.map(data.exam_types, 'id');
-
-    return (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history,
-      'POST', '/admin/crud/time_slots', { data }
-    )).chain(AsyncResult.fromResponse)
+  async function loadSettings() {
+    (await (
+      await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', '/admin/settings')
+    ).chain(AsyncResult.fromResponse)
+    ).onSuccess(async (data) => setSettings(data.settings))
   }
 
-  async function updateTimeSlot(id: number, values: Entity): Promise<AsyncResult<any, any>> {
-    const data = values.toJSON();
-
-    data.exam_types = _.map(data.exam_types, 'id');
-
-    return (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history,
-      'PUT', `/admin/crud/time_slots/${id}`, { data }
-    )).chain(AsyncResult.fromResponse)
+  async function loadExamTypes() {
+    (await examTypeService.loadAll()
+    ).onSuccess(async (examTypes) => { setExamTypes(examTypes) });
   }
 
-  async function deleteTimeSlot(id: number): Promise<AsyncResult<any, any>> {
-    return (await auth.authenticatedRequestWithLogoutWhenSessionExpired(history,
-      'DELETE', `/admin/crud/time_slots/${id}`
-    )).chain(AsyncResult.fromResponse)
+  async function loadTimeSlots() {
+    (await timeSlotService.loadAll({ withAssocs: 'exam_types' })
+    ).onSuccess(async (timeSlots) => { setTimeSlots(timeSlots) });
   }
 
-  const loadSettings  = async () => loadData(
-    '/admin/settings', {}, (data) => setSettings(data.settings)
-  )
-  const loadExamTypes = async () => loadData(
-    '/admin/crud/exam_types', {},
-    (data) => setExamTypes(data.exam_types.map((etJSON: JSONData) => ExamType.fromJSON(etJSON)))
-  )
-  const loadTimeSlots = async () => loadData(
-    '/admin/crud/time_slots',
-    { params: { 'with[]': 'exam_types' } },
-    (data) => setTimeSlots(data.time_slots.map((tsJSON: JSONData) => TimeSlot.fromJSON(tsJSON)))
-  )
-
-  async function submit(timeSlot: Entity): Promise<AsyncResult<null, string>> {
+  async function submit(timeSlot: TimeSlot): Promise<AsyncResult<TimeSlot, string>> {
     let result;
 
     if (creating) {
-      result = await createTimeSlot(timeSlot)
+      result = await timeSlotService.create(timeSlot)
 
       result.onSuccess(async () => setCreating(false))
     } else {
-      result = await updateTimeSlot(editedId as number, timeSlot);
+      result = await timeSlotService.update(editedId as number, timeSlot);
 
       result.onSuccess(async () => setEditedId(null))
     }
@@ -135,10 +109,10 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
         title='Smazání časového slotu'
         prompt={`Skutečně chcete smazat časový slot "${(getDeletedSlot() as TimeSlot).name}"?`}
         onConfirm={async () => {
-          const result = await deleteTimeSlot(deletedId);
+          const result = await timeSlotService.delete(deletedId);
 
           result.onSuccess(async     () => { setErrors([]); loadTimeSlots() });
-          result.onFailure(async (data) => {
+          result.onFailure(async (data: JSONData) => {
             setErrors([`Nemohu smazat časový slot: ${data.error}.`]);
           })
 

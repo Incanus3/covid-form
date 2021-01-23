@@ -8,10 +8,19 @@ function formatTime(date: Date) {
   return format(date, 'HH:mm')
 }
 
-type JSONFields   = Record<string, any>;
-type EntityFields = Record<string, any>;
+export interface JSONSerializable {
+  toJSON(): JSONData;
+}
 
-export class ExamType {
+export interface JSONDeserializer {
+  fromJSON(data: JSONData): Entity;
+}
+
+export type Entity   = Record<string, any> & JSONSerializable;
+export type JSONData = Record<string, any>;
+type EntityFields    = Record<string, any>;
+
+export class ExamType implements JSONSerializable {
   id?:         number;
   description: string;
 
@@ -20,16 +29,16 @@ export class ExamType {
     this.description = description;
   }
 
-  static fromJSON({ id, description }: JSONFields): ExamType {
+  static fromJSON({ id, description }: JSONData): ExamType {
     return new this({ id, description });
   }
 
-  toJSON(): JSONFields {
+  toJSON(): JSONData {
     return { id: this.id, description: this.description };
   }
 }
 
-export class TimeSlot {
+export class TimeSlot implements JSONSerializable {
   id?:              number;
   name:             string;
   startTime:        Date;
@@ -47,7 +56,7 @@ export class TimeSlot {
   }
 
   static fromJSON(
-    { id, name, start_time, end_time, limit_coefficient, exam_types }: JSONFields
+    { id, name, start_time, end_time, limit_coefficient, exam_types }: JSONData
   ): TimeSlot {
     return new this({
       id, name,
@@ -55,13 +64,13 @@ export class TimeSlot {
       endTime:   parseTime(end_time),
       limitCoefficient: limit_coefficient,
       examTypes: (
-        exam_types && exam_types.map((etJSON: JSONFields) => ExamType.fromJSON(etJSON)) || null
+        exam_types && exam_types.map((etJSON: JSONData) => ExamType.fromJSON(etJSON)) || null
       ),
     })
   }
 
-  toJSON(): JSONFields {
-    const json: JSONFields = {
+  toJSON(): JSONData {
+    const json: JSONData = {
       name:              this.name,
       start_time:        this.formattedStartTime,
       end_time:          this.formattedEndTime,

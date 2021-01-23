@@ -31,6 +31,14 @@ class ResultBase<SDT, FDT> {
 }
 
 export class Result<SDT, FDT> extends ResultBase<SDT, FDT> {
+  transformSuccess<SDT2>(transformer: (data: SDT) => SDT2): AsyncResult<SDT2, FDT> {
+    if (this.isSuccess) {
+      return new (this.constructor as AsyncResultConstructor<SDT2, FDT>)(transformer(this.successData as SDT));
+    } else {
+      return new (this.constructor as AsyncResultConstructor<SDT2, FDT>)(this.failureData);
+    }
+  }
+
   transformFailure<FDT2>(transformer: (data: FDT) => FDT2): Result<SDT, FDT2> {
     if (this.isSuccess) {
       return new (this.constructor as ResultConstructor<SDT, FDT2>)(this.successData);
@@ -69,6 +77,14 @@ export class AsyncResult<SDT, FDT> extends ResultBase<SDT, FDT> {
     const constructor = response.ok ? AsyncSuccess : AsyncFailure;
 
     return new (constructor as AsyncResultConstructor<any, any>)(await getResponseData(response));
+  }
+
+  async transformSuccess<SDT2>(transformer: (data: SDT) => Promise<SDT2>): Promise<AsyncResult<SDT2, FDT>> {
+    if (this.isSuccess) {
+      return new (this.constructor as AsyncResultConstructor<SDT2, FDT>)(await transformer(this.successData as SDT));
+    } else {
+      return new (this.constructor as AsyncResultConstructor<SDT2, FDT>)(this.failureData);
+    }
   }
 
   async transformFailure<FDT2>(transformer: (data: FDT) => Promise<FDT2>): Promise<AsyncResult<SDT, FDT2>> {
