@@ -12,7 +12,8 @@ import { Auth, AuthContext, RequestOptions } from 'src/auth';
 import TimeSlotModal from './Modal'
 import TimeSlotTable from './Table'
 
-type Entity = Record<string, any>;
+type Entity   = Record<string, any>;
+type JSONData = Record<string, any>;
 
 function TimeSlotManagement({ history }: RouteComponentProps) {
   const auth = useContext<Auth | null>(AuthContext) as Auth;
@@ -25,7 +26,7 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
   const [deletedId, setDeletedId] = useState<number   | null>(null);
   const [creating,  setCreating ] = useState<boolean>(false);
 
-  function getDeletedSlot(): Entity { return _.find(timeSlots, { id: deletedId }) as Entity }
+  function getDeletedSlot(): Entity | null { return _.find(timeSlots, { id: deletedId }) ?? null }
 
   async function loadData(
     path: string, options: RequestOptions, successHandler: (data: any) => void
@@ -65,12 +66,12 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
   )
   const loadExamTypes = async () => loadData(
     '/admin/crud/exam_types', {},
-    (data) => setExamTypes(data.exam_types.map((etJSON: any) => ExamType.fromJSON(etJSON)))
+    (data) => setExamTypes(data.exam_types.map((etJSON: JSONData) => ExamType.fromJSON(etJSON)))
   )
   const loadTimeSlots = async () => loadData(
     '/admin/crud/time_slots',
     { params: { 'with[]': 'exam_types' } },
-    (data) => setTimeSlots(data.time_slots.map((tsJSON: any) => TimeSlot.fromJSON(tsJSON)))
+    (data) => setTimeSlots(data.time_slots.map((tsJSON: JSONData) => TimeSlot.fromJSON(tsJSON)))
   )
 
   async function submit(timeSlot: Entity): Promise<AsyncResult<null, string>> {
@@ -106,6 +107,12 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
         <Card.Body>
           {errors.length && <Alert variant='danger'>{_.join(errors)}</Alert> || null}
 
+          {settings &&
+            <p>
+              Nastavená denní kapacita je <strong>{settings.daily_registration_limit}</strong>.
+            </p>
+          }
+
           {settings && timeSlots &&
             <TimeSlotTable
               create={() => setCreating(true)}
@@ -126,7 +133,7 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
 
       {deletedId && <ConfirmModal
         title='Smazání časového slotu'
-        prompt={`Skutečně chcete smazat časový slot "${getDeletedSlot().name}"?`}
+        prompt={`Skutečně chcete smazat časový slot "${(getDeletedSlot() as TimeSlot).name}"?`}
         onConfirm={async () => {
           const result = await deleteTimeSlot(deletedId);
 
@@ -137,7 +144,7 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
 
           setDeletedId(null);
         }}
-        onCancel={ () => setDeletedId(null)}
+        onCancel={() => setDeletedId(null)}
       />}
     </Container>
   )
