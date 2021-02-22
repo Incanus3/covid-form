@@ -118,7 +118,7 @@ export function RequestorTypeSelection({ value, setValue }) {
   let label, options;
 
   if (config.app_type === APP_TYPE_COVID_TEST) {
-    label = 'Kdo vyšetření požaduje?'
+    label   = 'Kdo vyšetření požaduje?'
     options = [
       { id: REQUESTOR_TYPE_PL,
         label: 'PL / PLDD (odeslal mne můj ošetřující lékař)' },
@@ -130,7 +130,7 @@ export function RequestorTypeSelection({ value, setValue }) {
         label: 'Veřejnost (dobrovolné bezplatné testování)' },
     ]
   } else {
-    label = 'Komu je očkování určeno?'
+    label   = 'Komu je očkování určeno?'
     options = [
       { id: REQUESTOR_TYPE_PL,
         label: 'Zdavotnický pracovník' },
@@ -139,7 +139,7 @@ export function RequestorTypeSelection({ value, setValue }) {
       { id: REQUESTOR_TYPE_SAMOPL,
         label: 'Pacient PZS' },
       { id: REQUESTOR_TYPE_AG,
-        label: 'Klient instituce sociálních služeb' },
+        label: 'Senior 80+' },
     ]
   }
 
@@ -185,16 +185,24 @@ export function InsuranceCompanySelection({ value, setValue }) {
 }
 
 export function RequestFormCheckbox({ checked, setChecked }) {
+  let label;
+
+  if (config.app_type === APP_TYPE_COVID_TEST) {
+    label = 'Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS'
+  } else {
+    label = 'Provedl(a) jsem registraci v centrálním rezervačním systému'
+  }
+
   return (
     <Form.Group id="have-request-form">
       <Form.Check
         required
         type="checkbox"
-        label="Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS"
+        label={label}
         checked={checked}
         onChange={() => setChecked(!checked)}
         isInvalid={!checked}
-        feedback='Bez této žádanky NENÍ další registrace možná, vyšetření nebude provedeno.'
+        feedback={`Bez této žádanky NENÍ další registrace možná, ${procedureName} nebude provedeno.`}
       />
     </Form.Group>
   )

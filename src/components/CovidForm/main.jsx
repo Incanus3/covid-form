@@ -5,7 +5,6 @@ import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
 import config                          from 'src/config'
 import { request                     } from 'src/backend';
-import { APP_TYPE_VACCINATION        } from 'src/constants';
 import { formatDate, keysToSnakeCase } from 'src/utils/generic';
 import { AsyncResult                 } from 'src/utils/results';
 
@@ -14,6 +13,8 @@ import {
   RequestorTypeSelection, RequestFormCheckbox, FirstNameInput, LastNameInput, MunicipalityInput,
   ZipCodeInput, EmailInput, PhoneInput, InsuranceNumberInput
 } from './input_components';
+
+import { APP_TYPE_COVID_TEST, APP_TYPE_VACCINATION } from 'src/constants';
 import {
   REQUESTOR_TYPE_AG, REQUESTOR_TYPE_PL, REQUESTOR_TYPE_SAMOPL,
   EXAM_TYPES, EXAM_TYPE_AG, EXAM_TYPE_PCR, EXAM_TYPE_RAPID,
@@ -176,11 +177,15 @@ export default function CovidForm() {
   const phoneIsValid  = phoneNumber.match(PHONE_REGEX);
   const insNumIsValid = insuranceCompany === INSURANCE_COMPANY_KHS
     || isValidInsuranceNumber(insuranceNumber);
+  const requestFormNeeded =
+    (config.app_type === APP_TYPE_COVID_TEST &&
+     requestorTypeId !== REQUESTOR_TYPE_SAMOPL &&
+     examTypeId      !== EXAM_TYPE_AG) ||
+    (config.app_type === APP_TYPE_VACCINATION &&
+     requestorTypeId === REQUESTOR_TYPE_AG)
   const canSubmit = examDate && firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
-    && (config.app_type === APP_TYPE_VACCINATION ||
-      requestorTypeId === REQUESTOR_TYPE_SAMOPL ||
-      examTypeId === EXAM_TYPE_AG || haveRequestForm);
+    && (!requestFormNeeded || haveRequestForm);
 
   const hasRegistered = responseData?.status === 'OK';
   const disableSubmit = !canSubmit || hasRegistered;
@@ -219,9 +224,7 @@ export default function CovidForm() {
         setValue={setExamType} disabledValues={disabledExamTypeIds}
       />
 
-      {config.app_type === APP_TYPE_VACCINATION ||
-        requestorTypeId === REQUESTOR_TYPE_SAMOPL ||
-        examTypeId === EXAM_TYPE_AG ||
+      {requestFormNeeded &&
         <RequestFormCheckbox checked={haveRequestForm} setChecked={setHaveRequestForm} />}
 
       <ExamDateSelection
