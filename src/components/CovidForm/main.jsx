@@ -69,15 +69,17 @@ export default function CovidForm() {
 
     setRequestorTypeId(requestorTypeId);
 
-    if (requestorTypeId === REQUESTOR_TYPE_AG) {
-      setExamType(EXAM_TYPE_AG);
-      setDisabledExamTypeIds(NON_AG_EXAM_TYPES);
-    } else if (requestorTypeId === REQUESTOR_TYPE_SAMOPL) {
-      setExamType(EXAM_TYPE_RAPID);
-      setDisabledExamTypeIds(NON_RAPID_EXAM_TYPES);
-    } else {
-      setExamType(NON_AG_EXAM_TYPES[0]);
-      setDisabledExamTypeIds([REQUESTOR_TYPE_AG]);
+    if (config.app_type === APP_TYPE_COVID_TEST) {
+      if (requestorTypeId === REQUESTOR_TYPE_AG) {
+        setExamType(EXAM_TYPE_AG);
+        setDisabledExamTypeIds(NON_AG_EXAM_TYPES);
+      } else if (requestorTypeId === REQUESTOR_TYPE_SAMOPL) {
+        setExamType(EXAM_TYPE_RAPID);
+        setDisabledExamTypeIds(NON_RAPID_EXAM_TYPES);
+      } else {
+        setExamType(NON_AG_EXAM_TYPES[0]);
+        setDisabledExamTypeIds([EXAM_TYPE_AG]);
+      }
     }
   }
 
