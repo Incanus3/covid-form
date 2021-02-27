@@ -135,9 +135,9 @@ export function RequestorTypeSelection({ value, setValue }) {
       { id: REQUESTOR_TYPE_PL,
         label: 'Zdavotnický pracovník' },
       { id: REQUESTOR_TYPE_KHS,
-        label: 'Pracovník v sociálních službách' },
+        label: 'Pracovník ve školství' },
       { id: REQUESTOR_TYPE_SAMOPL,
-        label: 'Pacient PZS' },
+        label: 'Senior 70-79' },
       { id: REQUESTOR_TYPE_AG,
         label: 'Senior 80+' },
     ]
