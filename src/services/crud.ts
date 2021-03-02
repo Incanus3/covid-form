@@ -3,17 +3,17 @@ import { History, LocationState } from 'history';
 
 import      { AsyncResult                                  } from 'src/utils/results';
 import      { Auth, RequestOptions, RequestArgs            } from 'src/auth';
-import      { ExamType, TimeSlot                           } from 'src/models';
+import      { Setting, ExamType, TimeSlot                  } from 'src/models';
 import type { JSONData, JSONSerializable, JSONDeserializer } from 'src/models';
 
 abstract class CRUDService<Model extends JSONSerializable> {
   protected auth:    Auth;
   protected history: History<LocationState>;
 
-  abstract model:       JSONDeserializer;
-  abstract dataKey:     string;
-  abstract basePath:    string;
-  abstract assocFields: string[];
+  abstract model:    JSONDeserializer;
+  abstract dataKey:  string;
+  abstract basePath: string;
+  assocFields:       string[] = [];
 
   constructor(auth: Auth, history: History<LocationState>) {
     this.auth    = auth;
@@ -40,13 +40,13 @@ abstract class CRUDService<Model extends JSONSerializable> {
     ).transformSuccess(async (tsJSON: JSONData) => this.model.fromJSON(tsJSON) as Model);
   }
 
-  async update(id: number, entity: Model): Promise<AsyncResult<Model, any>> {
+  async update(id: number | string, entity: Model): Promise<AsyncResult<Model, any>> {
     return (
       await this.request('PUT', `${this.basePath}/${id}`, { data: this.serializeEntity(entity) })
     ).transformSuccess(async (tsJSON: JSONData) => this.model.fromJSON(tsJSON) as Model);
   }
 
-  async delete(id: number): Promise<AsyncResult<null, any>> {
+  async delete(id: number | string): Promise<AsyncResult<null, any>> {
     return (
       await this.request('DELETE', `${this.basePath}/${id}`)
     ).transformSuccess(async () => null);
@@ -83,4 +83,10 @@ export class TimeSlotCRUDService extends CRUDService<TimeSlot> {
   dataKey     = 'time_slots';
   basePath    = '/admin/crud/time_slots';
   assocFields = ['exam_types'];
+}
+
+export class SettingCRUDService extends CRUDService<Setting> {
+  model       = Setting;
+  dataKey     = 'settings';
+  basePath    = '/admin/crud/settings';
 }

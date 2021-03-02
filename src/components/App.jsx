@@ -9,6 +9,7 @@ import Navbar             from './Navbar'
 import Registration       from './Registration'
 import Login              from './admin/Login'
 import Export             from './admin/Export'
+import Settings           from './admin/Settings'
 import TimeSlotManagement from './admin/TimeSlotManagement'
 
 const auth = new Auth()
@@ -53,6 +54,7 @@ export default function App() {
               <Switch>
                 <LoggedOutRoute path="/admin/login" redirectTo="/admin/export"><Login /></LoggedOutRoute>
                 <LoggedInRoute path="/admin/export"><Export /></LoggedInRoute>
+                <LoggedInRoute path="/admin/settings"><Settings /></LoggedInRoute>
                 <LoggedInRoute path="/admin/time_slot_management"><TimeSlotManagement /></LoggedInRoute>
                 <Redirect to="/admin/login" />
               </Switch>

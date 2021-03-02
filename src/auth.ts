@@ -123,7 +123,7 @@ export class Auth {
   async _withRefresh(requestingFunction: (...args: any) => Promise<Response>): Promise<Response> {
     const response = await requestingFunction();
 
-    if (response.ok ?? !await this.isExpiredAccessTokenResponse(response)) {
+    if (response.ok || !await this.isExpiredAccessTokenResponse(response)) {
       return response;
     }
 

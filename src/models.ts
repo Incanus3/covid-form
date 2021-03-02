@@ -20,6 +20,24 @@ export type Entity   = Record<string, any> & JSONSerializable;
 export type JSONData = Record<string, any>;
 type EntityFields    = Record<string, any>;
 
+export class Setting implements JSONSerializable {
+  key: string;
+  value: any;
+
+  constructor({ key, value }: EntityFields) {
+    this.key   = key;
+    this.value = value;
+  }
+
+  static fromJSON({ key, value }: JSONData): Setting {
+    return new this({ key, value });
+  }
+
+  toJSON(): JSONData {
+    return { key: this.key, value: this.value };
+  }
+}
+
 export class ExamType implements JSONSerializable {
   id?:         number;
   description: string;

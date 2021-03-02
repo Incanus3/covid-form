@@ -1,2 +1,4 @@
 export const APP_TYPE_COVID_TEST  = 'APP_TYPE_COVID_TEST';
 export const APP_TYPE_VACCINATION = 'APP_TYPE_VACCINATION';
+
+export const ERROR_CODE_NOT_FOUND = 'not_found';

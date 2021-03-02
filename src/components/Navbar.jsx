@@ -40,7 +40,8 @@ function CovidNavbar({ location, history }) {
             {isAdminPage &&
               <>
                 <Navbar.Text><BsChevronCompactRight /></Navbar.Text>
-                <NavLink id="export-link" label='CSV export' to='/admin/export'/>
+                <NavLink id="export-link" label='CSV export' to='/admin/export' />
+                <NavLink id="settings-management-link" label="Nastavení" to='/admin/settings' />
                 <NavLink
                   id="time-slot-management-link"
                   label='Časové sloty'

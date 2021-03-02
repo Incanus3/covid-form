@@ -10,6 +10,10 @@ export function exportLink() {
   return cy.get('#export-link')
 }
 
+export function settingsManagementLink() {
+  return cy.get('#settings-management-link')
+}
+
 export function timeSlotManagementLink() {
   return cy.get('#time-slot-management-link')
 }

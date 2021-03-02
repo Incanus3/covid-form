@@ -65,4 +65,3 @@ export default function TimeSlotTable({ timeSlots, dailyRegistrationLimit, creat
     </Table>
   )
 }
-
