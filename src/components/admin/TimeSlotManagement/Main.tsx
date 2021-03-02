@@ -33,7 +33,7 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
 
   async function loadSettings() {
     (await (
-      await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', '/admin/settings')
+      await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', '/admin/crud/settings')
     ).chain(AsyncResult.fromResponse)
     ).onSuccess(async (data) => setSettings(data.settings))
   }
