@@ -4,6 +4,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  margin-bottom: 26px;
 }
 
 code {
@@ -17,6 +19,10 @@ code {
 
 .row {
   margin-bottom: 24px;
+}
+
+dl.row {
+  margin-bottom: 0;
 }
 
 form {

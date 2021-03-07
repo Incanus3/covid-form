@@ -3,5 +3,6 @@
   "testFiles": "**/*_spec.*",
   "video": false,
   "viewportWidth": 800,
+  "viewportHeight": 800,
   "experimentalStudio": true
 }

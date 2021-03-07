@@ -15,7 +15,7 @@ context('Registration', () => {
     it('succeeds', () => {
       fillForm()
 
-      cy.intercept('POST', '/register').as('register')
+      cy.intercept('POST', '/registration/create').as('register')
       submit()
       cy.wait('@register')
 
@@ -27,7 +27,7 @@ context('Registration', () => {
     it('should show appropriate error message', () => {
       const data = fillForm()
 
-      cy.intercept('POST', '/register').as('register')
+      cy.intercept('POST', '/registration/create').as('register')
       submit()
       cy.wait('@register')
 
@@ -36,7 +36,7 @@ context('Registration', () => {
       reset()
       fillForm(data)
 
-      cy.intercept('POST', '/register').as('register')
+      cy.intercept('POST', '/registration/create').as('register')
       submit()
       cy.wait('@register')
 

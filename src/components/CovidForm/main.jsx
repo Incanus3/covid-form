@@ -5,7 +5,7 @@ import { Alert, Form, Button, Row, Col } from 'react-bootstrap';
 
 import config                          from 'src/config'
 import { request                     } from 'src/backend';
-import { formatDate, keysToSnakeCase } from 'src/utils/generic';
+import { formatDate, keysToSnakeCase, keysToCamelCase } from 'src/utils/generic';
 import { AsyncResult                 } from 'src/utils/results';
 
 import {
@@ -50,12 +50,11 @@ export default function CovidForm() {
   const [examTypes,           setExamTypes]           = useState([]);
   const [timeSlots,           setTimeSlots]           = useState([]);
   const [fullDates,           setFullDates]           = useState([]);
+  const [startDate,           setStartDate]           = useState(new Date());
+  const [endDate,             setEndDate]             = useState(add(new Date(), { months: 2 }));
   const [disabledExamTypeIds, setDisabledExamTypeIds] = useState([]);
   const [loadingExamTypes,    setLoadingExamTypes]    = useState(true);
   const [loadingTimeSlots,    setLoadingTimeSlots]    = useState(true);
-
-  const minDate = new Date();
-  const maxDate = add(new Date(), { months: 2 });
 
   function setExamType(newExamTypeId) {
     if (newExamTypeId !== examTypeId) loadTimeSlots(newExamTypeId);
@@ -112,7 +111,7 @@ export default function CovidForm() {
   async function loadTimeSlots(examTypeId) {
     setLoadingTimeSlots(true);
 
-    const result = await AsyncResult.fromResponse(await request('GET', '/capacity/available_time_slots', {
+    const result = await AsyncResult.fromResponse(await request('GET', '/registration/available_time_slots', {
       params: { exam_type: examTypeId }
     }));
 
@@ -126,19 +125,34 @@ export default function CovidForm() {
     return firstId;
   }
 
-  async function loadFullDates() {
-    const result = await AsyncResult.fromResponse(await request('GET', '/capacity/full_dates', {
-      params: { start_date: formatDate(minDate), end_date: formatDate(maxDate) }
+  async function loadFullDates({ startDate, endDate }) {
+    console.log('loadFullDates called with', startDate, endDate)
+
+    const result = await AsyncResult.fromResponse(await request('GET', '/registration/full_dates', {
+      params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
     }));
 
     // TODO: handle failure
     setFullDates(result.data.dates.map((date) => parseISO(date)));
   }
 
+  async function loadAllowedDates() {
+    const result    = await AsyncResult.fromResponse(await request('GET', '/registration/allowed_dates'));
+    // TODO: handle failure
+    const data      = keysToCamelCase(result.data)
+    const startDate = parseISO(data.startDate)
+    const endDate   = parseISO(data.endDate)
+
+    setStartDate(startDate)
+    setEndDate(endDate)
+
+    return { startDate, endDate }
+  }
+
   useEffect(() => {
     async function loadData() {
       loadTimeSlots(await loadExamTypes());
-      loadFullDates();
+      loadFullDates(await loadAllowedDates());
     }
 
     setRequestorType(REQUESTOR_TYPE_PL);
@@ -158,7 +172,9 @@ export default function CovidForm() {
       })
     };
 
-    const result = await AsyncResult.fromResponse(await request('post', '/register', { data }));
+    const result = await AsyncResult.fromResponse(
+      await request('post', '/registration/create', { data })
+    );
 
     setResponseData(result.data);
   }
@@ -230,7 +246,7 @@ export default function CovidForm() {
 
       <ExamDateSelection
         value={examDate} setValue={setExamDate}
-        minDate={minDate} maxDate={maxDate} disabledDates={fullDates}
+        minDate={startDate} maxDate={endDate} disabledDates={fullDates}
       />
 
       <ExamTimeSelection
