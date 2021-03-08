@@ -1,5 +1,15 @@
 export function visit() {
+  cy.intercept('GET', '/crud/exam_types').as('examTypes')
+  cy.intercept('GET', '/registration/full_dates').as('fullDates')
+  cy.intercept('GET', '/registration/allowed_dates').as('allowedDates')
+  cy.intercept('GET', '/registration/available_time_slots').as('availableTimeSlots')
+
   cy.visit('/')
+
+  cy.wait('@examTypes')
+  cy.wait('@fullDates')
+  cy.wait('@allowedDates')
+  cy.wait('@availableTimeSlots')
 }
 
 export function fillForm({
@@ -25,11 +35,17 @@ export function fillForm({
 }
 
 export function submit() {
+  cy.intercept('POST', '/registration/create').as('register')
+
   submitButton().click()
+
+  cy.wait('@register')
 }
 
 export function reset() {
   cy.get('#covid-form-reset-button').click()
+
+  return cy.wait(200)
 }
 
 export function submitButton() {
@@ -42,7 +58,11 @@ export function alert() {
 
 export function checkRequestFormCheckbox() {
   // may not be there, so we can't use cy.get()
-  Cypress.$('#have-request-form .form-check-input').trigger('click')
+  const checkbox = Cypress.$('#have-request-form .form-check-input')
+
+  if (!checkbox.is(':checked')) {
+    checkbox.trigger('click')
+  }
 }
 
 const random = Cypress._.random

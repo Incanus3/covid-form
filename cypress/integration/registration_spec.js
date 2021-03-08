@@ -1,4 +1,6 @@
-import { visit, fillForm, submit, reset, alert, submitButton } from './helpers/registration'
+import {
+  visit, fillForm, submit, reset, alert, submitButton
+} from './helpers/registration'
 
 context('Registration', () => {
   beforeEach(() => {
@@ -15,9 +17,7 @@ context('Registration', () => {
     it('succeeds', () => {
       fillForm()
 
-      cy.intercept('POST', '/registration/create').as('register')
       submit()
-      cy.wait('@register')
 
       alert().should('contain', 'registrace byla úspěšná')
     })
@@ -27,20 +27,17 @@ context('Registration', () => {
     it('should show appropriate error message', () => {
       const data = fillForm()
 
-      cy.intercept('POST', '/registration/create').as('register')
       submit()
-      cy.wait('@register')
 
       alert().should('contain', 'registrace byla úspěšná')
 
-      reset()
-      fillForm(data)
+      reset().then(() => {
+        fillForm(data)
 
-      cy.intercept('POST', '/registration/create').as('register')
-      submit()
-      cy.wait('@register')
+        submit()
 
-      alert().should('contain', 'je již registrován')
+        alert().should('contain', 'je již registrován')
+      })
     })
   })
 })
