@@ -3,7 +3,7 @@ import { History, LocationState } from 'history';
 
 import      { AsyncResult                                  } from 'src/utils/results';
 import      { Auth, RequestOptions, RequestArgs            } from 'src/auth';
-import      { Setting, ExamType, TimeSlot                  } from 'src/models';
+import      { Setting, ExamType, DailyOverride, TimeSlot   } from 'src/models';
 import type { JSONData, JSONSerializable, JSONDeserializer } from 'src/models';
 
 abstract class CRUDService<Model extends JSONSerializable> {
@@ -89,4 +89,10 @@ export class SettingCRUDService extends CRUDService<Setting> {
   model       = Setting;
   dataKey     = 'settings';
   basePath    = '/admin/crud/settings';
+}
+
+export class DailyOverrideCRUDService extends CRUDService<DailyOverride> {
+  model       = DailyOverride;
+  dataKey     = 'daily_overrides';
+  basePath    = '/admin/crud/daily_overrides';
 }

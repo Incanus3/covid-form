@@ -1,5 +1,6 @@
-import { mapKeys   } from 'lodash';
-import { formatISO } from 'date-fns';
+import { mapKeys           } from 'lodash';
+import { format, formatISO } from 'date-fns';
+import csLocale              from 'date-fns/locale/cs';
 
 export function camelToSnakeCase(string: string): string {
   return string.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -21,4 +22,8 @@ export function keysToSnakeCase(object: Record<string, any>): Record<string, any
 
 export function formatDate(date: Date): string {
   return formatISO(date, { representation: 'date' })
+}
+
+export function formatDateHuman(date: Date): string {
+  return format(date, 'PP', { locale: csLocale })
 }

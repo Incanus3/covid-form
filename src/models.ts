@@ -1,4 +1,5 @@
-import { format, parse } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
+import { formatDate              } from 'src/utils/generic';
 
 function parseTime(timeString: string) {
   return parse(timeString, 'HH:mm', new Date())
@@ -35,6 +36,26 @@ export class Setting implements JSONSerializable {
 
   toJSON(): JSONData {
     return { key: this.key, value: this.value };
+  }
+}
+
+export class DailyOverride implements JSONSerializable {
+  id?:               number;
+  date:              Date;
+  registrationLimit: number;
+
+  constructor({ id, date, registrationLimit }: EntityFields) {
+    this.id                = id;
+    this.date              = date;
+    this.registrationLimit = registrationLimit;
+  }
+
+  static fromJSON({ id, date, registration_limit }: JSONData): DailyOverride {
+    return new this({ id, date: parseISO(date), registrationLimit: registration_limit });
+  }
+
+  toJSON(): JSONData {
+    return { id: this.id, date: formatDate(this.date), registration_limit: this.registrationLimit }
   }
 }
 

@@ -43,6 +43,11 @@ function CovidNavbar({ location, history }) {
                 <NavLink id="export-link" label='CSV export' to='/admin/export' />
                 <NavLink id="settings-management-link" label="Nastavení" to='/admin/settings' />
                 <NavLink
+                  id="daily-overrides-management-link"
+                  label='Denní kapacity'
+                  to='/admin/daily_overrides_management'
+                />
+                <NavLink
                   id="time-slot-management-link"
                   label='Časové sloty'
                   to='/admin/time_slot_management'

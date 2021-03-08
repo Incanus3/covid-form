@@ -15,9 +15,14 @@ export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, subm
   const [limitCoefficient, setLimitCoefficient] = useState(timeSlot.limitCoefficient);
   const [examTypes,        setExamTypes       ] = useState(timeSlot.examTypes);
 
+  const disableSubmit = (
+    !name || !_.isDate(startTime) || !_.isDate(endTime) ||
+    !_.isNumber(limitCoefficient) || _.isNaN(limitCoefficient) || limitCoefficient < 0
+  )
+
   const FromInput = React.forwardRef(({ value, onClick }, ref) =>
     <>
-      <Form.Control readOnly value={value} onClick={onClick} ref={ref} isInvalid={!startTime} />
+      <Form.Control readOnly value={value} onClick={onClick} ref={ref} isInvalid={!_.isDate(startTime)} />
       <Form.Control.Feedback type="invalid">
         Tato položka je povinná
       </Form.Control.Feedback>
@@ -26,7 +31,7 @@ export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, subm
 
   const ToInput = React.forwardRef(({ value, onClick }, ref) =>
     <>
-      <Form.Control readOnly value={value} onClick={onClick} ref={ref} isInvalid={!endTime} />
+      <Form.Control readOnly value={value} onClick={onClick} ref={ref} isInvalid={!_.isDate(endTime)} />
       <Form.Control.Feedback type="invalid">
         Tato položka je povinná
       </Form.Control.Feedback>
@@ -97,7 +102,7 @@ export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, subm
                 type="number"
                 value={limitCoefficient}
                 onChange={(e) => setLimitCoefficient(parseInt(e.target.value))}
-                isInvalid={!limitCoefficient}
+                isInvalid={!_.isNumber(limitCoefficient) || _.isNaN(limitCoefficient) || limitCoefficient < 0}
               />
               <Form.Control.Feedback type="invalid">
                 Tato položka je povinná
@@ -131,6 +136,7 @@ export default function TimeSlotModal({ hide, timeSlot, availableExamTypes, subm
         </Button>
         <Button
           variant="primary"
+          disabled={disableSubmit}
           onClick={async () => {
             (await submit(new TimeSlot({ name, startTime, endTime, limitCoefficient, examTypes })))
               .onFailure(async (data) => {

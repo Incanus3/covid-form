@@ -14,6 +14,10 @@ export function settingsManagementLink() {
   return cy.get('#settings-management-link')
 }
 
+export function dailyOverridesManagementLink() {
+  return cy.get('#daily-overrides-management-link')
+}
+
 export function timeSlotManagementLink() {
   return cy.get('#time-slot-management-link')
 }

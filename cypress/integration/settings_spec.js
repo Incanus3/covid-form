@@ -1,4 +1,4 @@
-import { fullyLogIn }             from './helpers/authentication'
+import { fullyLogIn             } from './helpers/authentication'
 import { settingsManagementLink } from './helpers/links'
 
 context('Settings management', () => {
