@@ -126,8 +126,6 @@ export default function CovidForm() {
   }
 
   async function loadFullDates({ startDate, endDate }) {
-    console.log('loadFullDates called with', startDate, endDate)
-
     const result = await AsyncResult.fromResponse(await request('GET', '/registration/full_dates', {
       params: { start_date: formatDate(startDate), end_date: formatDate(endDate) }
     }));
