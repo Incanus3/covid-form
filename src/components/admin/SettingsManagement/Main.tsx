@@ -4,21 +4,11 @@ import { useState, useEffect, useContext } from 'react'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Container, Card                 } from 'react-bootstrap'
 
-import { camelToSnakeCase, keysToCamelCase } from 'src/utils/generic'
-import { AsyncResult                       } from 'src/utils/results'
-import { Auth, AuthContext                 } from 'src/auth'
-import { Setting, JSONData                 } from 'src/models'
-import { SettingCRUDService                } from 'src/services/crud'
-import { ERROR_CODE_NOT_FOUND              } from 'src/constants'
-import SettingsForm                          from './Form'
-
-type Settings = Record<string, any>
-
-function settingsToObject(settings: Setting[]): Settings {
-  return keysToCamelCase(_.fromPairs(
-    settings.map((setting) => [setting.key, setting.value])
-  ))
-}
+import { Auth, AuthContext                   } from 'src/auth'
+import { Setting                             } from 'src/models'
+import { SettingCRUDService                  } from 'src/services/crud'
+import { Settings, loadSettings, saveSetting } from 'src/utils/settings'
+import SettingsForm                            from './Form'
 
 function SettingsManagement({ history }: RouteComponentProps) {
   const auth = useContext<Auth | null>(AuthContext) as Auth
@@ -27,30 +17,8 @@ function SettingsManagement({ history }: RouteComponentProps) {
 
   const [settings, setSettings] = useState<Settings>({})
 
-  async function loadSettings() {
-    (await settingsService.loadAll()).onSuccess(async (settings: Setting[]) => {
-      setSettings(settingsToObject(settings))
-    })
-  }
-
-  async function saveSetting({ key, value }: Setting): Promise<AsyncResult<Setting, any>> {
-    key = camelToSnakeCase(key)
-
-    let result = await settingsService.update(key, new Setting({ key, value }))
-
-    await result.onFailure(async (data: JSONData) => {
-      if (data.code === ERROR_CODE_NOT_FOUND) {
-        result = await settingsService.create(new Setting({ key, value }))
-      }
-    })
-
-    await result.onSuccess(loadSettings)
-
-    return result
-  }
-
   useEffect(() => {
-    loadSettings()
+    loadSettings(settingsService, setSettings)
     // eslint-disable-next-line
   }, [])
 
@@ -61,7 +29,13 @@ function SettingsManagement({ history }: RouteComponentProps) {
 
         <Card.Body>
           {!_.isEmpty(settings) &&
-            <SettingsForm settings={settings} saveSetting={saveSetting} />}
+            <SettingsForm
+              settings={settings}
+              saveSetting={async (setting: Setting) => {
+                return (await saveSetting(settingsService, setting)
+                ).onSuccess(() => loadSettings(settingsService, setSettings))
+              }}
+            />}
         </Card.Body>
       </Card>
     </Container>

@@ -1,75 +1,70 @@
-import _ from 'lodash';
+import _ from 'lodash'
 
-import React, { useState, useEffect, useContext } from 'react';
-import { withRouter, RouteComponentProps        } from 'react-router-dom';
-import { Alert, Container, Card                 } from 'react-bootstrap';
+import { useState, useEffect, useContext } from 'react'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Alert, Container, Card          } from 'react-bootstrap'
 
-import { AsyncResult                              } from 'src/utils/results';
-import { ConfirmModal                             } from 'src/utils/components';
-import { Entity, ExamType, TimeSlot, JSONData     } from 'src/models';
-import { ExamTypeCRUDService, TimeSlotCRUDService } from 'src/services/crud';
-import { Auth, AuthContext                        } from 'src/auth';
+import { AsyncResult                                                  } from 'src/utils/results'
+import { ConfirmModal                                                 } from 'src/utils/components'
+import { Settings, loadSettings                                       } from 'src/utils/settings'
+import { Auth, AuthContext                                            } from 'src/auth'
+import { Entity, ExamType, TimeSlot, JSONData                         } from 'src/models'
+import { SettingCRUDService, ExamTypeCRUDService, TimeSlotCRUDService } from 'src/services/crud'
 
 import TimeSlotModal from './Modal'
 import TimeSlotTable from './Table'
 
 function TimeSlotManagement({ history }: RouteComponentProps) {
-  const auth = useContext<Auth | null>(AuthContext) as Auth;
+  const auth = useContext<Auth | null>(AuthContext) as Auth
 
-  const timeSlotService = new TimeSlotCRUDService(auth, history);
-  const examTypeService = new ExamTypeCRUDService(auth, history);
+  const settingsService = new SettingCRUDService(auth, history)
+  const timeSlotService = new TimeSlotCRUDService(auth, history)
+  const examTypeService = new ExamTypeCRUDService(auth, history)
 
-  const [errors,    setErrors   ] = useState<string[]  >([]);
-  const [examTypes, setExamTypes] = useState<ExamType[]>([]);
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [settings,  setSettings ] = useState<Entity | null>(null);
-  const [editedId,  setEditedId ] = useState<number | null>(null);
-  const [deletedId, setDeletedId] = useState<number | null>(null);
-  const [creating,  setCreating ] = useState<boolean>(false);
+  const [errors,    setErrors   ] = useState<string[]  >([])
+  const [examTypes, setExamTypes] = useState<ExamType[]>([])
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
+  const [settings,  setSettings ] = useState<Settings  >({})
+  const [editedId,  setEditedId ] = useState<number | null>(null)
+  const [deletedId, setDeletedId] = useState<number | null>(null)
+  const [creating,  setCreating ] = useState<boolean>(false)
 
   function getDeletedSlot(): TimeSlot | undefined {
     return _.find(timeSlots, (timeSlot: TimeSlot) => timeSlot.id === deletedId)
   }
 
-  async function loadSettings() {
-    (await (
-      await auth.authenticatedRequestWithLogoutWhenSessionExpired(history, 'GET', '/admin/crud/settings')
-    ).chain(AsyncResult.fromResponse)
-    ).onSuccess(async (data) => setSettings(data.settings))
-  }
-
   async function loadExamTypes() {
     (await examTypeService.loadAll()
-    ).onSuccess(async (examTypes) => { setExamTypes(examTypes) });
+    ).onSuccess(async (examTypes) => { setExamTypes(examTypes) })
   }
 
   async function loadTimeSlots() {
     (await timeSlotService.loadAll({ withAssocs: 'exam_types' })
-    ).onSuccess(async (timeSlots) => { setTimeSlots(timeSlots) });
+    ).onSuccess(async (timeSlots) => { setTimeSlots(timeSlots) })
   }
 
   async function submit(timeSlot: TimeSlot): Promise<AsyncResult<TimeSlot, string>> {
-    let result;
+    let result
 
     if (creating) {
       result = await timeSlotService.create(timeSlot)
 
       result.onSuccess(async () => setCreating(false))
     } else {
-      result = await timeSlotService.update(editedId as number, timeSlot);
+      result = await timeSlotService.update(editedId as number, timeSlot)
 
       result.onSuccess(async () => setEditedId(null))
     }
 
-    result.onSuccess(async () => loadTimeSlots());
+    result.onSuccess(async () => loadTimeSlots())
 
-    return result;
+    return result
   }
 
   useEffect(() => {
-    loadSettings();
-    loadExamTypes();
-    loadTimeSlots();
+    loadSettings(settingsService, setSettings)
+    loadExamTypes()
+    loadTimeSlots()
     // eslint-disable-next-line
   }, [])
 
@@ -83,7 +78,7 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
 
           {settings &&
             <p>
-              Nastavená denní kapacita je <strong>{settings.daily_registration_limit}</strong>.
+              Nastavená denní kapacita je <strong>{settings.dailyRegistrationLimit}</strong>.
             </p>
           }
 
@@ -93,7 +88,7 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
               edit={  (timeSlot: Entity) => setEditedId( timeSlot.id)}
               remove={(timeSlot: Entity) => setDeletedId(timeSlot.id)}
               timeSlots={timeSlots}
-              dailyRegistrationLimit={settings?.daily_registration_limit}
+              dailyRegistrationLimit={settings.dailyRegistrationLimit}
             />}
         </Card.Body>
       </Card>
@@ -109,14 +104,14 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
         title='Smazání časového slotu'
         prompt={`Skutečně chcete smazat časový slot "${(getDeletedSlot() as TimeSlot).name}"?`}
         onConfirm={async () => {
-          const result = await timeSlotService.delete(deletedId);
+          const result = await timeSlotService.delete(deletedId)
 
-          result.onSuccess(async     () => { setErrors([]); loadTimeSlots() });
+          result.onSuccess(async     () => { setErrors([]); loadTimeSlots() })
           result.onFailure(async (data: JSONData) => {
-            setErrors([`Nemohu smazat časový slot: ${data.error}.`]);
+            setErrors([`Nemohu smazat časový slot: ${data.error}.`])
           })
 
-          setDeletedId(null);
+          setDeletedId(null)
         }}
         onCancel={() => setDeletedId(null)}
       />}
@@ -124,4 +119,4 @@ function TimeSlotManagement({ history }: RouteComponentProps) {
   )
 }
 
-export default withRouter(TimeSlotManagement);
+export default withRouter(TimeSlotManagement)
