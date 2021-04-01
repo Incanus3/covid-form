@@ -137,9 +137,9 @@ export function RequestorTypeSelection({ value, setValue }) {
       { id: REQUESTOR_TYPE_KHS,
         label: 'Pracovník ve školství' },
       { id: REQUESTOR_TYPE_SAMOPL,
-        label: 'Senior 70-79' },
+        label: 'Senior 70+' },
       { id: REQUESTOR_TYPE_AG,
-        label: 'Senior 80+' },
+        label: 'Osoba s chronickým onemocněním (zdravotní indikace, na základě přiděleného unikátního kódu)' },
     ]
   }
 
@@ -185,12 +185,14 @@ export function InsuranceCompanySelection({ value, setValue }) {
 }
 
 export function RequestFormCheckbox({ checked, setChecked }) {
-  let label;
+  let label, requirement;
 
   if (config.app_type === APP_TYPE_COVID_TEST) {
-    label = 'Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS'
+    label       = 'Mám vystavenu elektronickou žádanku od mého PL/PLDD nebo z KHS'
+    requirement = 'žádanky'
   } else {
-    label = 'Provedl(a) jsem registraci v centrálním rezervačním systému'
+    label       = 'Provedl(a) jsem registraci v centrálním rezervačním systému'
+    requirement = 'registrace'
   }
 
   return (
@@ -202,7 +204,7 @@ export function RequestFormCheckbox({ checked, setChecked }) {
         checked={checked}
         onChange={() => setChecked(!checked)}
         isInvalid={!checked}
-        feedback={`Bez této žádanky NENÍ další registrace možná, ${procedureName} nebude provedeno.`}
+        feedback={`Bez této ${requirement} NENÍ rezervace možná, ${procedureName} nebude provedeno.`}
       />
     </Form.Group>
   )

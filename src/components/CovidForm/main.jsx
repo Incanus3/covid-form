@@ -196,8 +196,7 @@ export default function CovidForm() {
     (config.app_type === APP_TYPE_COVID_TEST &&
      requestorTypeId !== REQUESTOR_TYPE_SAMOPL &&
      examTypeId      !== EXAM_TYPE_AG) ||
-    (config.app_type === APP_TYPE_VACCINATION &&
-     requestorTypeId !== REQUESTOR_TYPE_PL)
+    (config.app_type === APP_TYPE_VACCINATION)
   const canSubmit = examDate && firstName && lastName && municipality
     && zipIsValid && emailIsValid && phoneIsValid && insNumIsValid
     && (!requestFormNeeded || haveRequestForm);
