@@ -137,7 +137,7 @@ export function RequestorTypeSelection({ value, setValue }) {
       { id: REQUESTOR_TYPE_KHS,
         label: 'Pracovník ve školství' },
       { id: REQUESTOR_TYPE_SAMOPL,
-        label: 'Senior 70+' },
+        label: 'Senior 65+' },
       { id: REQUESTOR_TYPE_AG,
         label: 'Osoba s chronickým onemocněním (zdravotní indikace, na základě přiděleného unikátního kódu)' },
     ]
