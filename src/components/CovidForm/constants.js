@@ -1,7 +1,8 @@
-export const EXAM_TYPE_AG    = 'ag'
-export const EXAM_TYPE_PCR   = 'pcr'
-export const EXAM_TYPE_RAPID = 'rapid'
-export const EXAM_TYPES      = [EXAM_TYPE_AG, EXAM_TYPE_PCR, EXAM_TYPE_RAPID]
+export const EXAM_TYPE_AG       = 'ag'
+export const EXAM_TYPE_PCR      = 'pcr'
+export const EXAM_TYPE_PCR_SCRN = 'pcr-scrn'
+export const EXAM_TYPE_RAPID    = 'rapid'
+export const EXAM_TYPES         = [EXAM_TYPE_AG, EXAM_TYPE_PCR, EXAM_TYPE_PCR_SCRN, EXAM_TYPE_RAPID]
 
 export const REQUESTOR_TYPE_AG     = 'ag'
 export const REQUESTOR_TYPE_PL     = 'pl'

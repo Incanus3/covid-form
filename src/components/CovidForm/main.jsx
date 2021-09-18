@@ -17,7 +17,7 @@ import {
 import { APP_TYPE_COVID_TEST, APP_TYPE_VACCINATION } from 'src/constants';
 import {
   REQUESTOR_TYPE_AG, REQUESTOR_TYPE_PL, REQUESTOR_TYPE_SAMOPL,
-  EXAM_TYPES, EXAM_TYPE_AG, EXAM_TYPE_PCR, EXAM_TYPE_RAPID,
+  EXAM_TYPES, EXAM_TYPE_AG, EXAM_TYPE_PCR, EXAM_TYPE_PCR_SCRN, EXAM_TYPE_RAPID,
   INSURANCE_COMPANY_KHS
 } from './constants';
 
@@ -68,12 +68,12 @@ export default function CovidForm() {
     if (config.app_type === APP_TYPE_COVID_TEST) {
       if (requestorTypeId === REQUESTOR_TYPE_AG) {
         setExamType(EXAM_TYPE_AG);
-        setDisabledExamTypeIds(_.difference(EXAM_TYPES, [EXAM_TYPE_AG]));
+        setDisabledExamTypeIds(_.difference(EXAM_TYPES, [EXAM_TYPE_AG, EXAM_TYPE_PCR_SCRN]));
       } else if (requestorTypeId === REQUESTOR_TYPE_SAMOPL) {
         setExamType(EXAM_TYPE_RAPID);
         setDisabledExamTypeIds(_.difference(EXAM_TYPES, [EXAM_TYPE_RAPID]));
       } else {
-        const disabledTypes = [EXAM_TYPE_AG, EXAM_TYPE_RAPID];
+        const disabledTypes = [EXAM_TYPE_AG, EXAM_TYPE_PCR_SCRN, EXAM_TYPE_RAPID];
 
         setExamType(_.difference(EXAM_TYPES, disabledTypes)[0]);
         setDisabledExamTypeIds(disabledTypes);
