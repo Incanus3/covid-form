@@ -134,12 +134,12 @@ export function RequestorTypeSelection({ value, setValue }) {
     options = [
       { id: REQUESTOR_TYPE_PL,
         label: 'Zdavotnický pracovník' },
-      { id: REQUESTOR_TYPE_KHS,
-        label: 'Pracovník ve školství' },
-      { id: REQUESTOR_TYPE_SAMOPL,
-        label: 'Senior 65+' },
-      { id: REQUESTOR_TYPE_AG,
-        label: 'Osoba s chronickým onemocněním (zdravotní indikace, na základě přiděleného unikátního kódu)' },
+      // { id: REQUESTOR_TYPE_KHS,
+      //   label: 'Pracovník ve školství' },
+      // { id: REQUESTOR_TYPE_SAMOPL,
+      //   label: 'Senior 65+' },
+      // { id: REQUESTOR_TYPE_AG,
+      //   label: 'Osoba s chronickým onemocněním (zdravotní indikace, na základě přiděleného unikátního kódu)' },
     ]
   }
 
