@@ -1,5 +1,5 @@
 import { Alert, Form                                } from 'react-bootstrap';
-import { isWeekend, isMonday, isWednesday, isFriday } from 'date-fns';
+import { isWeekend, isMonday, isWednesday, isFriday, isSaturday } from 'date-fns';
 
 import config                               from 'src/config'
 import { RadioGroup, ResponsiveDatePicker } from 'src/utils/components';
@@ -93,7 +93,8 @@ export function ExamDateSelection({ value, setValue, minDate, maxDate, disabledD
   let dateFilter;
 
   if (config.app_type === APP_TYPE_COVID_TEST) {
-    dateFilter = (date) => !isWeekend(date)
+    // dateFilter = (date) => !isWeekend(date)
+    dateFilter = (date) => !isSaturday(date)
   } else {
     dateFilter = (date) => isMonday(date) || isWednesday(date) || isFriday(date)
   }
