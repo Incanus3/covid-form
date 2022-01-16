@@ -8,8 +8,8 @@ export default function CovidCard() {
       <Card.Body>
         <Card.Title>Prosíme, před vyplněním si přečtěte následující informace:</Card.Title>
         <Card.Text>
-          Provoz odběrového místa je zajištěn <strong>v pracovní dny v době od 8.00 do 13.00
-          hod.</strong> a od 13.30 do 16.00 (odpolední termín pouze pro individuálně pozvané
+          Provoz odběrového místa je zajištěn <strong>v pracovní dny v době od 8.00 do 12.30
+          hod.</strong> a od 13.00 do 16.00 (odpolední termín pouze pro individuálně pozvané
           pacienty ze strany nemocnice).
         </Card.Text>
         <Card.Text>
