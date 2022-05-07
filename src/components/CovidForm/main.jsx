@@ -71,7 +71,7 @@ export default function CovidForm() {
         setDisabledExamTypeIds(_.difference(EXAM_TYPES, [EXAM_TYPE_AG, EXAM_TYPE_PCR_SCRN]));
       } else if (requestorTypeId === REQUESTOR_TYPE_SAMOPL) {
         setExamType(EXAM_TYPE_RAPID);
-        setDisabledExamTypeIds(_.difference(EXAM_TYPES, [EXAM_TYPE_RAPID]));
+        setDisabledExamTypeIds(_.difference(EXAM_TYPES, [EXAM_TYPE_RAPID, EXAM_TYPE_AG]));
       } else {
         const disabledTypes = [EXAM_TYPE_AG, EXAM_TYPE_PCR_SCRN, EXAM_TYPE_RAPID];
 

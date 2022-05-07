@@ -150,6 +150,7 @@ export function RequestorTypeSelection({ value, setValue }) {
       value={value}
       setter={setValue}
       options={options}
+      disabledIds={[REQUESTOR_TYPE_AG]}
     />
   )
 }
